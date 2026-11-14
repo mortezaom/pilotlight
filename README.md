@@ -78,7 +78,7 @@ src/layouts        Base and dashboard layouts
 src/components     React islands and shadcn/ui (components/ui)
 src/data           Zod schemas and service queries
 src/db             Drizzle schema
-src/lib            Auth, encryption, monitoring, notifications, settings
+src/lib            Auth, encryption, monitoring, notifications, settings, themes
 src/middleware.ts  Auth guard, CSRF check, cache defaults
 src/worker.ts      Worker entry: Astro for requests, monitoring for crons
 migrations         D1 migrations
