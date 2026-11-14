@@ -55,59 +55,53 @@ export function BrandingForm({ data }: { data: Branding | null }) {
   return (
     <Form {...form}>
       <form
-        className="flex w-full flex-col space-y-8"
+        className="flex w-full max-w-xl flex-col gap-6"
         onSubmit={form.handleSubmit(onSubmit)}
       >
-        <div className="grid grid-cols-2 items-start gap-8">
-          <div className="flex flex-col items-stretch gap-4">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Pilotlight" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="announcement"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Announcement (optional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g. Scheduled maintenance on Sunday 02:00 UTC"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Shown above the live status, which is worked out
-                    automatically from your services.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <BrandingFileUpload
-              currentImage={data?.imageUrl ?? null}
-              onChange={setLogo}
-            />
-          </div>
+        <div className="flex flex-col gap-5">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input placeholder="Pilotlight" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="announcement"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Announcement (optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="e.g. Scheduled maintenance on Sunday 02:00 UTC"
+                    {...field}
+                  />
+                </FormControl>
+                <FormDescription>
+                  Shown above the live status, which is worked out automatically
+                  from your services.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Description (SEO)</FormLabel>
+                <FormLabel>Description (for search engines)</FormLabel>
                 <FormControl>
                   <Textarea
                     className="min-h-24"
-                    placeholder="Description for Search Engines"
+                    placeholder="Live status of Acme's services"
                     {...field}
                   />
                 </FormControl>
@@ -115,18 +109,17 @@ export function BrandingForm({ data }: { data: Branding | null }) {
               </FormItem>
             )}
           />
+          <BrandingFileUpload
+            currentImage={data?.imageUrl ?? null}
+            onChange={setLogo}
+          />
         </div>
-        <div className="flex justify-start">
-          <Button
-            className="flex w-full items-center px-10 py-5"
-            disabled={form.formState.isSubmitting}
-            type="submit"
-            variant="outline"
-          >
+        <div>
+          <Button disabled={form.formState.isSubmitting} type="submit">
             {form.formState.isSubmitting && (
               <Loader2Icon className="animate-spin" />
             )}
-            Submit
+            save branding
           </Button>
         </div>
       </form>

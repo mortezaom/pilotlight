@@ -145,16 +145,16 @@ export function ServiceDialog({
                     </Select>
                     <FormMessage />
                     {field.value === "tcp" && (
-                      <p className="mt-2 rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-700 dark:border-blue-800 dark:bg-blue-950/20 dark:text-blue-300">
-                        TCP checks use an external TCP checker service. Set its
-                        URL in the settings below.{" "}
+                      <p className="text-sub border-main mt-2 border-l-2 pl-3 text-xs">
+                        TCP checks, and HTTP on ports other than 80/443, go
+                        through your TCP checker (Settings → monitoring).{" "}
                         <a
-                          className="text-blue-600 hover:underline dark:text-blue-400"
+                          className="text-main underline underline-offset-4"
                           href="https://github.com/mortezaom/relay-tcp"
                           rel="noopener noreferrer"
                           target="_blank"
                         >
-                          Deploy the TCP checker →
+                          Deploy the checker
                         </a>
                       </p>
                     )}

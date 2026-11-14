@@ -1,21 +1,74 @@
 ---
-import { BrandingForm } from "@/components/dashboard/branding-form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { count, eq } from "drizzle-orm";
+import { getDb } from "@/db";
+import { notificationChannels, serviceAlerts, settings } from "@/db/schema";
+import { getOpenIncidents, getServicesWithStatus } from "@/data/services-storage";
 import Dashboard from "@/layouts/dashboard.astro";
-import { getSetting } from "@/lib/settings";
+import { formatAge } from "@/lib/format";
+import { overallStatus } from "@/lib/status";
 
-const branding = await getSetting("branding");
+const db = getDb();
+const [services, incidents, [channels], [alerts], [branded]] = await Promise.all([
+  getServicesWithStatus(db),
+  getOpenIncidents(db),
+  db.select({ n: count() }).from(notificationChannels),
+  db.select({ n: count() }).from(serviceAlerts),
+  db.select({ n: count() }).from(settings).where(eq(settings.key, "branding")),
+]);
+const overall = overallStatus(services.map((s) => s.status));
+const dot = { down: "bg-down", partial: "bg-warn", unknown: "bg-sub", up: "bg-up" }[overall.level];
+
+const steps = [
+  { done: services.length > 0, href: "/dashboard/services", label: "Add a service to monitor" },
+  { done: channels.n > 0, href: "/dashboard/notifications", label: "Add a notification channel" },
+  { done: alerts.n > 0, href: "/dashboard/services", label: "Choose which channels alert for a service (the bell icon)" },
+  { done: branded.n > 0, href: "/dashboard/settings", label: "Name your status page and pick a theme" },
+];
+const pending = steps.filter((s) => !s.done);
 ---
 
-<Dashboard title="Dashboard">
-  <div class="space-y-8">
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
-      <p class="text-muted-foreground mt-2">Manage your status page branding</p>
+<Dashboard title="Overview">
+  <section class="border-line flex flex-col gap-2 border-b pb-6">
+    <div class="flex items-center gap-3">
+      <span class:list={["size-2.5 rounded-full", dot]}></span>
+      <p class="text-lg font-semibold">{overall.label}</p>
     </div>
-    <Card>
-      <CardHeader><CardTitle>Branding</CardTitle></CardHeader>
-      <CardContent><BrandingForm data={branding} client:load /></CardContent>
-    </Card>
-  </div>
+    <p class="text-sub">
+      {services.length} services · {channels.n} channels · {incidents.length} open incidents
+    </p>
+  </section>
+
+  <section class="flex flex-col gap-3" aria-labelledby="incidents">
+    <h2 class="text-sub text-xs tracking-widest uppercase" id="incidents">Open incidents</h2>
+    {
+      incidents.length === 0 ? (
+        <p class="text-sub">None. Everything that's monitored is answering.</p>
+      ) : (
+        <ul class="border-line flex flex-col border-t">
+          {incidents.map((incident) => (
+            <li class="border-line flex flex-wrap justify-between gap-x-4 border-b py-3">
+              <span><span class="text-down">●</span> {incident.service}{incident.description && <span class="text-sub"> · {incident.description}</span>}</span>
+              <span class="text-sub">for {formatAge(incident.startTime)}</span>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+
+  {
+    pending.length > 0 && (
+      <section class="flex flex-col gap-3" aria-labelledby="setup">
+        <h2 class="text-sub text-xs tracking-widest uppercase" id="setup">Setup</h2>
+        <ul class="flex flex-col gap-2">
+          {steps.map((step) => (
+            <li class="flex gap-3">
+              <span class:list={[step.done ? "text-up" : "text-sub"]}>{step.done ? "✓" : "○"}</span>
+              {step.done ? <span class="text-sub line-through">{step.label}</span> : <a class="hover:text-main underline underline-offset-4" href={step.href}>{step.label}</a>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
 </Dashboard>

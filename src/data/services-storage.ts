@@ -126,9 +126,25 @@ export const toPublicService = (service: ServiceWithStatus) => ({
   link: service.showAddress
     ? `${service.type}://${service.address}${[80, 443].includes(service.port) ? "" : `:${service.port}`}`
     : null,
+  lastCheck: service.lastCheck,
   name: service.name,
+  responseTime: service.responseTime,
   status: service.status,
   uptime: service.uptime,
 });
 
 export type PublicService = ReturnType<typeof toPublicService>;
+
+/** Ongoing incidents with their service name, newest first */
+export const getOpenIncidents = (db = getDb()) =>
+  db
+    .select({
+      description: incidents.description,
+      id: incidents.id,
+      service: services.name,
+      startTime: incidents.startTime,
+    })
+    .from(incidents)
+    .innerJoin(services, eq(incidents.serviceId, services.id))
+    .where(eq(incidents.status, "ongoing"))
+    .orderBy(desc(incidents.startTime));

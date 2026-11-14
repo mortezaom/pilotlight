@@ -1,9 +1,12 @@
 import { getDb } from "@/db";
 import { settings } from "@/db/schema";
+import { DEFAULT_THEMES } from "./themes";
 
 export type GlobalSettings = {
   defaultMonitoringInterval: number; // minutes
   tcpCheckerUrl: string;
+  darkTheme: string; // theme ids from src/lib/themes.ts
+  lightTheme: string;
 };
 
 export type Branding = {
@@ -28,7 +31,12 @@ const DEFAULTS: { [K in keyof Documents]?: Documents[K] } = {
     imageUrl: null,
     title: "Pilotlight",
   },
-  settings: { defaultMonitoringInterval: 5, tcpCheckerUrl: "" },
+  settings: {
+    darkTheme: DEFAULT_THEMES.dark,
+    defaultMonitoringInterval: 5,
+    lightTheme: DEFAULT_THEMES.light,
+    tcpCheckerUrl: "",
+  },
 };
 
 export async function getSetting<K extends keyof Documents>(

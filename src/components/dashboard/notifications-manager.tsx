@@ -1,16 +1,10 @@
-import { Plus } from "lucide-react";
+import { PlusIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { NotificationChannelDialog } from "@/components/dashboard/notification-channel-dialog";
 import { NotificationChannelsList } from "@/components/dashboard/notification-channels-list";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { apiFetch, errorMessage } from "@/lib/api-client";
 import type { PublicNotificationChannel } from "@/lib/notifications/types";
 
@@ -45,14 +39,16 @@ export function NotificationsManager() {
     setDialogOpen(true);
   };
 
-  const handleDelete = async (channelId: string) => {
-    // biome-ignore lint/suspicious/noAlert: simple confirmation is enough here
-    const confirmed = confirm("Delete this notification channel?");
-    if (!confirmed) {
+  const [deleting, setDeleting] = useState<PublicNotificationChannel | null>(
+    null
+  );
+
+  const deleteChannel = async () => {
+    if (!deleting) {
       return;
     }
     try {
-      await apiFetch(`/api/notification-channels/${channelId}`, {
+      await apiFetch(`/api/notification-channels/${deleting.id}`, {
         method: "DELETE",
       });
       toast.success("Channel deleted");
@@ -76,40 +72,23 @@ export function NotificationsManager() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Notifications</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage notification channels and alert settings
-          </p>
-        </div>
-        <Button onClick={() => openDialog(null)} size="lg">
-          <Plus className="mr-2 size-4" />
-          Add Channel
+    <section className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <p className="text-sub max-w-xl">
+          Telegram, Discord, Slack, email, ntfy, Gotify or Apprise. Choose which
+          services alert each channel from the bell on the services page.
+        </p>
+        <Button onClick={() => openDialog(null)} size="sm">
+          <PlusIcon /> new channel
         </Button>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Notification Channels</CardTitle>
-          <CardDescription>
-            Configure where you want to receive alerts when your services go
-            down. Supports Telegram, Discord, Slack, Email, ntfy, Gotify, and
-            Apprise.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <NotificationChannelsList
-            channels={channels}
-            loading={loading}
-            onDelete={handleDelete}
-            onEdit={openDialog}
-            onToggle={handleToggle}
-          />
-        </CardContent>
-      </Card>
-
+      <NotificationChannelsList
+        channels={channels}
+        loading={loading}
+        onDelete={setDeleting}
+        onEdit={openDialog}
+        onToggle={handleToggle}
+      />
       <NotificationChannelDialog
         channel={editing}
         onOpenChange={setDialogOpen}
@@ -119,6 +98,13 @@ export function NotificationsManager() {
         }}
         open={dialogOpen}
       />
-    </div>
+      <ConfirmDialog
+        confirmLabel="Delete"
+        description={`Delete "${deleting?.name}"? Services that alert through it stop sending there.`}
+        onClose={() => setDeleting(null)}
+        onConfirm={deleting ? deleteChannel : null}
+        title="Delete channel"
+      />
+    </section>
   );
 }

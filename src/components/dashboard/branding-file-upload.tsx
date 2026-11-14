@@ -72,7 +72,7 @@ export default function BrandingFileUpload({
     <div className="flex flex-col gap-2">
       <div className="relative">
         <div
-          className="border-input has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50 relative flex h-52 flex-col items-center justify-center overflow-hidden rounded-xl border border-dashed p-4 transition-colors has-[input:focus]:ring-[3px]"
+          className="border-input has-[input:focus]:border-ring has-[input:focus]:ring-ring/50 data-[dragging=true]:bg-accent/50 relative flex h-36 flex-col items-center justify-center overflow-hidden rounded-md border border-dashed p-4 transition-colors has-[input:focus]:ring-[3px]"
           data-dragging={isDragging || undefined}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
@@ -101,7 +101,7 @@ export default function BrandingFileUpload({
               >
                 <ImageIcon className="size-4 opacity-60" />
               </div>
-              <p className="mb-3.5 text-sm font-medium">Upload your Logo</p>
+              <p className="mb-3.5 text-sm font-medium">Logo</p>
               <p className="text-muted-foreground flex flex-col items-center gap-1 text-xs">
                 <span>SVG, PNG, JPG, GIF or WebP (max. {MAX_SIZE_MB}MB)</span>
                 <b>
@@ -128,7 +128,7 @@ export default function BrandingFileUpload({
           <div className="absolute top-4 right-4">
             <button
               aria-label="Remove image"
-              className="focus-visible:border-ring focus-visible:ring-ring/50 z-50 flex size-8 cursor-pointer items-center justify-center rounded-full bg-black/60 text-white transition-[color,box-shadow] outline-none hover:bg-black/80 focus-visible:ring-[3px]"
+              className="focus-visible:border-ring focus-visible:ring-ring/50 bg-background/80 text-foreground hover:bg-background z-50 flex size-8 cursor-pointer items-center justify-center rounded-full border transition-[color,box-shadow] outline-none focus-visible:ring-[3px]"
               onClick={handleRemove}
               type="button"
             >

@@ -9,13 +9,14 @@ Self-hosted uptime monitoring and status page that runs entirely on Cloudflare's
 - **Per-service visibility**: hide a service from the status page, or show it without revealing its address
 - **Alerts** after N consecutive failures plus recovery notices, via Telegram, Discord, Slack, Email ([Resend](https://resend.com)), ntfy, Gotify and Apprise. Credentials are encrypted (AES-256-GCM) at rest
 - **HTTP, HTTPS and TCP** checks (TCP, and HTTP on non-standard ports, through a small external [checker](https://github.com/mortezaom/relay-tcp))
+- **Themes**: 12 built-in palettes (Catppuccin, Rosé Pine, Nord, Gruvbox, Dracula, Tokyo Night, Solarized and more). The admin picks a dark and a light theme; visitors get whichever matches their system setting
 - **Secure by default**: one admin account claimed with a setup secret, rate-limited login, logout that revokes every session, CSRF checks
 
 ## Stack
 
 - [Astro](https://astro.build) on Cloudflare Workers: server-rendered pages, React only where the page is interactive
 - Cloudflare **D1** with [Drizzle ORM](https://orm.drizzle.team) for all data
-- Tailwind CSS 4 + shadcn/ui
+- Tailwind CSS 4 + shadcn/ui primitives, styled from nine theme colors; JetBrains Mono, self-hosted
 - [Bun](https://bun.sh) for installs, scripts and tests; Biome via [Ultracite](https://www.ultracite.ai) for lint/format
 
 ## Deploy (GitHub Actions)
@@ -87,3 +88,7 @@ scripts            CI setup and secret generation
 ## License
 
 TBD
+
+## Adding a theme
+
+Themes live in `src/lib/themes.ts`: a name, `dark` or `light`, and nine colors (`bg`, `surface`, `line`, `text`, `sub`, `main`, `up`, `warn`, `down`). `bun run test` checks every theme for readable contrast, so a new palette has to pass before it ships.

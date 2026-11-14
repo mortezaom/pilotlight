@@ -1,0 +1,50 @@
+---
+import { BrandingForm } from "@/components/dashboard/branding-form";
+import { PasswordForm } from "@/components/dashboard/password-form";
+import { SettingsForm } from "@/components/dashboard/settings-form";
+import { ThemePicker } from "@/components/dashboard/theme-picker";
+import Dashboard from "@/layouts/dashboard.astro";
+import { getSetting } from "@/lib/settings";
+import { DEFAULT_THEMES, isThemeId } from "@/lib/themes";
+
+const [settings, branding] = await Promise.all([getSetting("settings"), getSetting("branding")]);
+const darkTheme = settings && isThemeId(settings.darkTheme) ? settings.darkTheme : DEFAULT_THEMES.dark;
+const lightTheme = settings && isThemeId(settings.lightTheme) ? settings.lightTheme : DEFAULT_THEMES.light;
+
+const sections = ["appearance", "branding", "monitoring", "account"];
+---
+
+<Dashboard title="Settings">
+  <nav aria-label="Settings sections" class="text-sub -mt-4 flex flex-wrap gap-x-5 gap-y-1">
+    {sections.map((s) => <a class="hover:text-main" href={`#${s}`}>{s}</a>)}
+  </nav>
+
+  <section aria-labelledby="appearance" class="border-line flex flex-col gap-4 border-t pt-6">
+    <div>
+      <h2 class="font-semibold" id="appearance">appearance</h2>
+      <p class="text-sub">Used by the status page and this dashboard. Visitors get the dark or light theme according to their system setting.</p>
+    </div>
+    <ThemePicker client:load darkTheme={darkTheme} lightTheme={lightTheme} />
+  </section>
+
+  <section aria-labelledby="branding" class="border-line flex flex-col gap-4 border-t pt-6">
+    <div>
+      <h2 class="font-semibold" id="branding">branding</h2>
+      <p class="text-sub">Name, logo and an optional announcement for the status page.</p>
+    </div>
+    <BrandingForm client:load data={branding} />
+  </section>
+
+  <section aria-labelledby="monitoring" class="border-line flex flex-col gap-4 border-t pt-6">
+    <h2 class="font-semibold" id="monitoring">monitoring</h2>
+    <SettingsForm client:load />
+  </section>
+
+  <section aria-labelledby="account" class="border-line flex flex-col gap-4 border-t pt-6">
+    <div>
+      <h2 class="font-semibold" id="account">account</h2>
+      <p class="text-sub">Changing the password signs out every other session.</p>
+    </div>
+    <PasswordForm client:load />
+  </section>
+</Dashboard>

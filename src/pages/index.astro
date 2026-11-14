@@ -1,95 +1,98 @@
 ---
-import { AlertCircleIcon, CheckCircle2Icon, MegaphoneIcon, TriangleAlertIcon } from "lucide-react";
-import { LogoVector } from "@/components/icons";
-import PulseCard from "@/components/pulse-card.astro";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { Alert, AlertTitle } from "@/components/ui/alert";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
-import GlitchText from "@/components/ui/shadcn-io/glitch-text";
+import StatusBars from "@/components/status-bars.astro";
+import { STATUS_LABELS } from "@/data/services-data";
 import { getServicesWithStatus, toPublicService } from "@/data/services-storage";
 import Base from "@/layouts/base.astro";
+import { formatAge, formatUtc } from "@/lib/format";
 import { getSetting } from "@/lib/settings";
 import { overallStatus } from "@/lib/status";
 
-const PINNED_COUNT = 2;
-
-const [branding, services] = await Promise.all([
+const [branding, settings, services] = await Promise.all([
   getSetting("branding"),
+  getSetting("settings"),
   getServicesWithStatus().catch((error) => {
     console.error("Failed to fetch services:", error);
     return [];
   }),
 ]);
 const visible = services.filter((s) => s.public).map(toPublicService);
-const pinned = visible.slice(0, PINNED_COUNT);
-const rest = visible.slice(PINNED_COUNT);
 const overall = overallStatus(visible.map((s) => s.status));
-const OverallIcon = {
-  down: AlertCircleIcon,
-  partial: TriangleAlertIcon,
-  unknown: AlertCircleIcon,
-  up: CheckCircle2Icon,
-}[overall.level];
+const dot = { down: "bg-down", partial: "bg-warn", unknown: "bg-sub", up: "bg-up" }[overall.level];
+
+// Freshness: say when checks last ran, and warn when the cron seems stopped
+const lastCheck = visible.map((s) => s.lastCheck).filter((t) => t !== undefined).sort().at(-1);
+const intervalMs = (settings?.defaultMonitoringInterval ?? 5) * 60_000;
+const stale = lastCheck !== undefined && Date.now() - Date.parse(lastCheck) > 3 * intervalMs;
+
+const detail = (service: (typeof visible)[number]) => {
+  const uptime = service.uptime === undefined ? "no data" : `${service.uptime.toFixed(2)}%`;
+  if (service.status && service.status !== "up") {
+    return `${uptime} · ${STATUS_LABELS[service.status].toLowerCase()}`;
+  }
+  return service.responseTime === undefined ? uptime : `${uptime} · ${service.responseTime} ms`;
+};
 
 // Served from Workers Cache: the Worker renders at most once a minute
 Astro.response.headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
 ---
 
 <Base description={branding?.description} title={branding?.title ?? "Pilotlight"}>
-  <main class="mx-auto flex w-full max-w-5xl flex-col items-stretch px-4">
-    <nav class="flex h-16 items-center justify-between border-b px-2">
-      <a aria-label="Home" class="flex size-12 items-center justify-center" href="/">
-        {
-          branding?.imageUrl ? (
-            <img alt="Logo" class="size-6" height="24" src={branding.imageUrl} width="24" />
-          ) : (
-            <LogoVector className="size-6" />
-          )
-        }
+  <main class="mx-auto flex min-h-svh w-full max-w-3xl flex-col gap-10 px-4 py-10 sm:py-16">
+    <header class="text-sub flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+      <a class="text-main flex items-center gap-2 font-semibold" href="/">
+        {branding?.imageUrl && <img alt="" class="size-5" height="20" src={branding.imageUrl} width="20" />}
+        {branding?.title ?? "Pilotlight"}
       </a>
-      <ThemeSwitcher client:load />
-    </nav>
+      {lastCheck && (
+        <span>updated <time datetime={lastCheck}>{formatUtc(lastCheck)}</time></span>
+      )}
+    </header>
 
     {
+      
       visible.length === 0 ? (
-        <div class="my-12 flex-1 space-y-4 pt-6">
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle className="font-mono text-8xl font-black">
-                <GlitchText className="text-center" enableOnHover enableShadows speed={1}>
-                  404
-                </GlitchText>
-              </EmptyTitle>
-              <EmptyDescription className="text-lg text-nowrap">
-                There is no Service or Website to monitor yet. <br />
-                Maybe on your next visit? 😉
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        </div>
+        <p class="text-sub">No services are being monitored yet.</p>
       ) : (
-        <div class="flex-1 space-y-4 pt-6">
-          {branding?.announcement && (
-            <Alert className="p-4">
-              <MegaphoneIcon />
-              <AlertTitle className="text-sm font-bold">{branding.announcement}</AlertTitle>
-            </Alert>
-          )}
-          <Alert className="p-4" data-status={overall.level}>
-            <OverallIcon />
-            <AlertTitle className="text-sm font-bold">{overall.label}</AlertTitle>
-          </Alert>
-          <div class="grid gap-4 md:grid-cols-2">
-            {pinned.map((service) => <PulseCard pinned service={service} />)}
-          </div>
-          {rest.length > 0 && (
-            <div class="mt-8 mb-4 flex flex-col gap-4">
-              <h2>All Services:</h2>
-              {rest.map((service) => <PulseCard service={service} />)}
+        <>
+          <section aria-labelledby="overall" class="border-line flex flex-col gap-3 border-b pb-6">
+            <div class="flex items-center gap-3">
+              <span class:list={["size-2.5 shrink-0 rounded-full", dot]} />
+              <h1 class="text-lg font-semibold" id="overall">{overall.label}</h1>
             </div>
-          )}
-        </div>
+            {stale && lastCheck && (
+              <p class="text-warn" role="status">
+                Checks may have stopped: the last one ran {formatAge(lastCheck)} ago.
+              </p>
+            )}
+            {branding?.announcement && <p class="border-main border-l-2 pl-3">{branding.announcement}</p>}
+          </section>
+
+          <section aria-label="Services" class="flex flex-col gap-8">
+            <ul class="flex flex-col gap-7">
+              {visible.map((service) => (
+                <li class="flex flex-col gap-2">
+                  <div class="flex flex-wrap items-baseline justify-between gap-x-4">
+                    {service.link ? (
+                      <a class="hover:text-main decoration-line underline underline-offset-4" href={service.link} rel="noopener noreferrer" target="_blank">{service.name}</a>
+                    ) : (
+                      <span>{service.name}</span>
+                    )}
+                    <span class:list={["tabular-nums", service.status && service.status !== "up" ? "text-down" : "text-sub"]}>{detail(service)}</span>
+                  </div>
+                  <StatusBars history={service.history} name={service.name} />
+                </li>
+              ))}
+            </ul>
+            <div class="text-sub flex justify-between text-xs" aria-hidden="true">
+              <span>50 checks ago</span><span>uptime: last 24 h</span><span>now</span>
+            </div>
+          </section>
+        </>
       )
     }
+
+    <footer class="text-sub mt-auto pt-6 text-xs">
+      powered by <a class="hover:text-main underline underline-offset-4" href="https://github.com/mortezaom/pilotlight" rel="noopener noreferrer" target="_blank">pilotlight</a>
+    </footer>
   </main>
 </Base>
