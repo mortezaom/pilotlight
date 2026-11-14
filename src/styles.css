@@ -7,15 +7,15 @@
 
 /* Fallback (Pilotlight Light) for anything rendered without the injected theme */
 :root {
-  --bg: #f5f6f8;
+  --bg: #f6f7f8;
   --surface: #ffffff;
-  --line: #e1e4e9;
-  --text: #14161a;
-  --sub: #5d6470;
-  --main: #2160e0;
-  --up: #15803d;
-  --warn: #b45309;
-  --down: #dc2626;
+  --line: #e2e5e9;
+  --text: #17191d;
+  --sub: #5f6670;
+  --main: #3d5f99;
+  --up: #2f7553;
+  --warn: #8f6720;
+  --down: #b04a40;
   --font-body: "Google Sans Flex", system-ui, sans-serif;
   --font-heading: var(--font-body);
   --font-data: "Google Sans Code", ui-monospace, monospace;
@@ -34,6 +34,7 @@
   --item-divider: 1px solid var(--line);
   --item-gap: 0.75rem;
   --item-pad: 1.1rem 1.25rem;
+  --item-radius: 14px;
   --item-shadow: none;
   --hero-size: 3rem;
   --hero-align: center;
@@ -214,7 +215,7 @@
     background: var(--item-bg);
     border: var(--item-border);
     border-bottom: var(--item-divider);
-    border-radius: var(--radius);
+    border-radius: var(--item-radius);
     box-shadow: var(--item-shadow);
   }
   .pl-bars {
