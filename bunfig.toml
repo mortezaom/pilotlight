@@ -1,0 +1,3 @@
+# Hoisted node_modules: avoids symlink issues with Windows tooling
+[install]
+linker = "hoisted"

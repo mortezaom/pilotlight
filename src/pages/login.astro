@@ -1,0 +1,32 @@
+---
+import AuthForm from "@/components/auth-form";
+import { LogoVector } from "@/components/icons";
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import Base from "@/layouts/base.astro";
+import { getSetting } from "@/lib/settings";
+
+const isInitialized = !!(await getSetting("admin"));
+---
+
+<Base title={isInitialized ? "Log in · Pilotlight" : "Set up · Pilotlight"}>
+  <div
+    class="flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10"
+  >
+    <div class="flex w-full max-w-sm flex-col gap-6">
+      <div class="flex flex-col items-center gap-4">
+        <LogoVector className="size-12" />
+        <h1 class="text-xl font-bold">
+          {isInitialized ? "Welcome back" : "Set up Pilotlight"}
+        </h1>
+        {!isInitialized && (
+  <p class="text-muted-foreground text-center text-sm">
+    Choose your admin email and password. The setup secret is the
+    <code>SETUP_SECRET</code> you configured when deploying.
+  </p>
+)}
+      </div>
+      <AuthForm isInitialized={isInitialized} client:load />
+    </div>
+    <ThemeSwitcher className="absolute top-4 right-4" client:load />
+  </div>
+</Base>

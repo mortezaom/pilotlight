@@ -1,0 +1,22 @@
+# dependencies
+/node_modules
+
+# build output
+/dist
+/.astro
+
+# misc
+.DS_Store
+*.pem
+*.tsbuildinfo
+npm-debug.log*
+
+# local secrets
+.env
+.env*.local
+.dev.vars*
+!.dev.vars.example
+
+# wrangler
+.wrangler
+secrets.json

@@ -1,0 +1,95 @@
+---
+import { AlertCircleIcon, CheckCircle2Icon, MegaphoneIcon, TriangleAlertIcon } from "lucide-react";
+import { LogoVector } from "@/components/icons";
+import PulseCard from "@/components/pulse-card.astro";
+import { ThemeSwitcher } from "@/components/theme-switcher";
+import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import GlitchText from "@/components/ui/shadcn-io/glitch-text";
+import { getServicesWithStatus, toPublicService } from "@/data/services-storage";
+import Base from "@/layouts/base.astro";
+import { getSetting } from "@/lib/settings";
+import { overallStatus } from "@/lib/status";
+
+const PINNED_COUNT = 2;
+
+const [branding, services] = await Promise.all([
+  getSetting("branding"),
+  getServicesWithStatus().catch((error) => {
+    console.error("Failed to fetch services:", error);
+    return [];
+  }),
+]);
+const visible = services.filter((s) => s.public).map(toPublicService);
+const pinned = visible.slice(0, PINNED_COUNT);
+const rest = visible.slice(PINNED_COUNT);
+const overall = overallStatus(visible.map((s) => s.status));
+const OverallIcon = {
+  down: AlertCircleIcon,
+  partial: TriangleAlertIcon,
+  unknown: AlertCircleIcon,
+  up: CheckCircle2Icon,
+}[overall.level];
+
+// Served from Workers Cache: the Worker renders at most once a minute
+Astro.response.headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+---
+
+<Base description={branding?.description} title={branding?.title ?? "Pilotlight"}>
+  <main class="mx-auto flex w-full max-w-5xl flex-col items-stretch px-4">
+    <nav class="flex h-16 items-center justify-between border-b px-2">
+      <a aria-label="Home" class="flex size-12 items-center justify-center" href="/">
+        {
+          branding?.imageUrl ? (
+            <img alt="Logo" class="size-6" height="24" src={branding.imageUrl} width="24" />
+          ) : (
+            <LogoVector className="size-6" />
+          )
+        }
+      </a>
+      <ThemeSwitcher client:load />
+    </nav>
+
+    {
+      visible.length === 0 ? (
+        <div class="my-12 flex-1 space-y-4 pt-6">
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle className="font-mono text-8xl font-black">
+                <GlitchText className="text-center" enableOnHover enableShadows speed={1}>
+                  404
+                </GlitchText>
+              </EmptyTitle>
+              <EmptyDescription className="text-lg text-nowrap">
+                There is no Service or Website to monitor yet. <br />
+                Maybe on your next visit? 😉
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </div>
+      ) : (
+        <div class="flex-1 space-y-4 pt-6">
+          {branding?.announcement && (
+            <Alert className="p-4">
+              <MegaphoneIcon />
+              <AlertTitle className="text-sm font-bold">{branding.announcement}</AlertTitle>
+            </Alert>
+          )}
+          <Alert className="p-4" data-status={overall.level}>
+            <OverallIcon />
+            <AlertTitle className="text-sm font-bold">{overall.label}</AlertTitle>
+          </Alert>
+          <div class="grid gap-4 md:grid-cols-2">
+            {pinned.map((service) => <PulseCard pinned service={service} />)}
+          </div>
+          {rest.length > 0 && (
+            <div class="mt-8 mb-4 flex flex-col gap-4">
+              <h2>All Services:</h2>
+              {rest.map((service) => <PulseCard service={service} />)}
+            </div>
+          )}
+        </div>
+      )
+    }
+  </main>
+</Base>

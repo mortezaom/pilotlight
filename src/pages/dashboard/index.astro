@@ -1,0 +1,21 @@
+---
+import { BrandingForm } from "@/components/dashboard/branding-form";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Dashboard from "@/layouts/dashboard.astro";
+import { getSetting } from "@/lib/settings";
+
+const branding = await getSetting("branding");
+---
+
+<Dashboard title="Dashboard">
+  <div class="space-y-8">
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <p class="text-muted-foreground mt-2">Manage your status page branding</p>
+    </div>
+    <Card>
+      <CardHeader><CardTitle>Branding</CardTitle></CardHeader>
+      <CardContent><BrandingForm data={branding} client:load /></CardContent>
+    </Card>
+  </div>
+</Dashboard>

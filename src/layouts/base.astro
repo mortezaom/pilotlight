@@ -1,0 +1,33 @@
+---
+import "@/styles.css";
+import { Toaster } from "@/components/ui/sonner";
+
+type Props = { title: string; description?: string };
+const { title, description = "Uptime monitoring and status page" } =
+  Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+    <meta content={description} name="description">
+    <link href="/favicon.svg" rel="icon" type="image/svg+xml">
+    <title>{title}</title>
+    <script is:inline>
+      // apply the saved theme before paint (dark by default)
+      try {
+        if (localStorage.getItem("theme") !== "light") {
+          document.documentElement.classList.add("dark");
+        }
+      } catch {
+        document.documentElement.classList.add("dark");
+      }
+    </script>
+  </head>
+  <body class="bg-background text-foreground antialiased">
+    <slot />
+    <Toaster client:idle />
+  </body>
+</html>
