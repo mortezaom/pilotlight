@@ -52,7 +52,7 @@ export function ServicesList() {
       <ul className="border-line flex flex-col border-t">
         {services.map((service) => (
           <li
-            className="border-line grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 border-b py-3 sm:grid-cols-[minmax(0,1fr)_7rem_5rem_7rem_auto]"
+            className="border-line grid grid-cols-[1fr_auto] items-center gap-x-4 gap-y-1 border-b py-3 sm:grid-cols-[minmax(0,1fr)_7rem_5rem_9rem_auto]"
             key={service.id}
           >
             <div className="min-w-0">
@@ -72,7 +72,7 @@ export function ServicesList() {
                 ? "—"
                 : `${service.uptime.toFixed(1)}%`}
             </span>
-            <span className="text-sub hidden sm:block">
+            <span className="text-sub hidden whitespace-nowrap sm:block">
               {service.lastCheck
                 ? formatDistanceToNowStrict(new Date(service.lastCheck), {
                     addSuffix: true,

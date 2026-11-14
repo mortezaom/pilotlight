@@ -56,7 +56,6 @@ export function fontsHref(ids = Object.keys(GOOGLE_FONTS) as FontId[]) {
 }
 
 export type ThemeStyle = {
-  label: string; // shown in the picker, e.g. "terminal"
   fonts: { body: FontId; heading: FontId; data: FontId };
   heading: {
     weight: number;
@@ -103,7 +102,6 @@ const STYLES = {
       size: "clamp(2.4rem, 7vw, 4rem)",
     },
     items: "cards",
-    label: "pilotlight",
     radius: "14px",
     shadow: "none",
   },
@@ -120,7 +118,6 @@ const STYLES = {
       size: "clamp(2.6rem, 8vw, 4.6rem)",
     },
     items: "rows",
-    label: "prism",
     radius: "10px",
     shadow: "none",
   },
@@ -141,7 +138,6 @@ const STYLES = {
       size: "clamp(2rem, 6vw, 3.2rem)",
     },
     items: "rows",
-    label: "terminal",
     radius: "0px",
     shadow: "none",
   },
@@ -162,7 +158,6 @@ const STYLES = {
       size: "clamp(2.4rem, 8vw, 4.4rem)",
     },
     items: "cards",
-    label: "blueprint",
     radius: "0px",
     shadow: "none",
   },
@@ -179,7 +174,6 @@ const STYLES = {
       size: "clamp(2rem, 6vw, 3.4rem)",
     },
     items: "cards",
-    label: "signal",
     radius: "18px",
     shadow:
       "0 0 0 1px var(--line), 0 1px 2px color-mix(in srgb, #000 10%, transparent)",
@@ -201,7 +195,6 @@ const STYLES = {
       size: "clamp(2.8rem, 9vw, 5.2rem)",
     },
     items: "cards",
-    label: "graphite",
     radius: "4px",
     shadow: "2px 2px 0 var(--text)",
   },
