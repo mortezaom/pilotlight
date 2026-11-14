@@ -1,22 +1,8 @@
-@import "@fontsource-variable/google-sans-flex";
-@import "@fontsource-variable/google-sans-code";
-@import "@fontsource-variable/geist";
-@import "@fontsource-variable/geist-mono";
-@import "@fontsource-variable/outfit";
-@import "@fontsource-variable/jetbrains-mono";
-@import "@fontsource-variable/space-grotesk";
-@import "@fontsource/space-mono/400.css";
-@import "@fontsource/space-mono/700.css";
-@import "@fontsource-variable/unbounded";
-@import "@fontsource-variable/onest";
-@import "@fontsource-variable/martian-mono";
-@import "@fontsource-variable/funnel-display";
-@import "@fontsource-variable/inter-tight";
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* The active theme pair is injected by base.astro from src/lib/themes.ts.
-   Fonts above cost nothing until a theme uses them. */
+/* The active theme pair and its Google Fonts are injected by base.astro
+   from src/lib/themes.ts. */
 @custom-variant dark (@media (prefers-color-scheme: dark));
 
 /* Fallback (Pilotlight Light) for anything rendered without the injected theme */
@@ -30,9 +16,9 @@
   --up: #15803d;
   --warn: #b45309;
   --down: #dc2626;
-  --font-body: "Google Sans Flex Variable", system-ui, sans-serif;
+  --font-body: "Google Sans Flex", system-ui, sans-serif;
   --font-heading: var(--font-body);
-  --font-data: "Google Sans Code Variable", ui-monospace, monospace;
+  --font-data: "Google Sans Code", ui-monospace, monospace;
   --heading-weight: 600;
   --heading-case: none;
   --heading-tracking: -0.03em;
@@ -54,9 +40,6 @@
   --hero-items: center;
   --hero-bg: var(--surface);
   --hero-fg: var(--text);
-  --hero-wave: var(--main);
-  --hero-wave-status: 100%;
-  --hero-wave-opacity: 0.5;
   --hero-lift: 0%;
 
   /* shadcn/ui variables, all derived from the theme */
@@ -159,7 +142,7 @@
   .pl-hero {
     --status: var(--sub);
     position: relative;
-    padding-block: 1.25rem clamp(6rem, 14vw, 8.5rem);
+    padding-block: 1.25rem clamp(3rem, 8vw, 5rem);
     overflow: hidden;
     color: var(--hero-fg);
     background: var(--hero-bg);
@@ -212,27 +195,6 @@
     max-width: 34rem;
     padding-top: 0.75rem;
   }
-  /* background strands, sliding one loop every 40 s */
-  .pl-wave {
-    position: absolute;
-    inset: auto 0 0;
-    height: clamp(7.5rem, 16vw, 10rem);
-    overflow: hidden;
-    pointer-events: none;
-    opacity: var(--hero-wave-opacity);
-  }
-  .pl-wave svg {
-    width: 200%;
-    height: 100%;
-    fill: none;
-    stroke: color-mix(
-      in srgb,
-      var(--status) var(--hero-wave-status),
-      var(--hero-wave)
-    );
-    stroke-width: 1;
-    animation: pl-slide 40s linear infinite;
-  }
   .pl-wrap {
     width: 100%;
     max-width: 52rem;
@@ -283,11 +245,6 @@
   }
 }
 
-@keyframes pl-slide {
-  to {
-    transform: translateX(-50%);
-  }
-}
 @keyframes pl-pulse {
   70% {
     box-shadow: 0 0 0 0.5rem transparent;
@@ -296,20 +253,7 @@
     box-shadow: 0 0 0 0 transparent;
   }
 }
-/* fade the strands out at both edges where supported */
-@supports (mask-image: none) {
-  .pl-wave {
-    mask-image: linear-gradient(
-      to right,
-      transparent,
-      #000 15%,
-      #000 85%,
-      transparent
-    );
-  }
-}
 @media (prefers-reduced-motion: reduce) {
-  .pl-wave svg,
   .pl-pulse {
     animation: none;
   }

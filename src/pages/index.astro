@@ -1,5 +1,4 @@
 ---
-import HeroWave from "@/components/hero-wave.astro";
 import StatusBars from "@/components/status-bars.astro";
 import { STATUS_LABELS } from "@/data/services-data";
 import { getServicesWithStatus, toPublicService } from "@/data/services-storage";
@@ -53,7 +52,6 @@ Astro.response.headers.set("Cache-Control", "public, max-age=60, stale-while-rev
 <Base description={branding?.description} title={title} toasts={false}>
   <div class="flex min-h-svh flex-col">
     <section aria-labelledby="overall" class="pl-hero" data-level={overall.level}>
-      <HeroWave />
       <div class="pl-wrap relative flex flex-col gap-12 sm:gap-16">
         <header class="flex items-center justify-between gap-4">
           <a class="flex items-center gap-2 font-semibold" href="/">

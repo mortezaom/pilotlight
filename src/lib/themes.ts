@@ -17,23 +17,43 @@ export const THEME_TOKENS = [
 
 export type ThemeColors = Record<(typeof THEME_TOKENS)[number], string>;
 
-// Font stacks; each is loaded in styles.css but only downloaded when used
-export const FONTS = {
-  "funnel-display": '"Funnel Display Variable", system-ui, sans-serif',
-  geist: '"Geist Variable", system-ui, sans-serif',
-  "geist-mono": '"Geist Mono Variable", ui-monospace, monospace',
-  "google-sans-code": '"Google Sans Code Variable", ui-monospace, monospace',
-  "google-sans-flex": '"Google Sans Flex Variable", system-ui, sans-serif',
-  "inter-tight": '"Inter Tight Variable", system-ui, sans-serif',
-  "jetbrains-mono": '"JetBrains Mono Variable", ui-monospace, monospace',
-  "martian-mono": '"Martian Mono Variable", ui-monospace, monospace',
-  onest: '"Onest Variable", system-ui, sans-serif',
-  outfit: '"Outfit Variable", system-ui, sans-serif',
-  "space-grotesk": '"Space Grotesk Variable", system-ui, sans-serif',
-  "space-mono": '"Space Mono", ui-monospace, monospace',
-  unbounded: '"Unbounded Variable", system-ui, sans-serif',
+const SANS = "system-ui, sans-serif";
+const MONO = "ui-monospace, monospace";
+
+// Google Fonts family, weight axis, and fallback stack
+const GOOGLE_FONTS = {
+  "funnel-display": ["Funnel Display", "300..800", SANS],
+  geist: ["Geist", "100..900", SANS],
+  "geist-mono": ["Geist Mono", "100..900", MONO],
+  "google-sans-code": ["Google Sans Code", "300..800", MONO],
+  "google-sans-flex": ["Google Sans Flex", "100..1000", SANS],
+  "inter-tight": ["Inter Tight", "100..900", SANS],
+  "jetbrains-mono": ["JetBrains Mono", "100..800", MONO],
+  "martian-mono": ["Martian Mono", "100..800", MONO],
+  onest: ["Onest", "100..900", SANS],
+  outfit: ["Outfit", "100..900", SANS],
+  "space-grotesk": ["Space Grotesk", "300..700", SANS],
+  "space-mono": ["Space Mono", "400;700", MONO],
+  unbounded: ["Unbounded", "200..900", SANS],
 } as const;
-type FontId = keyof typeof FONTS;
+type FontId = keyof typeof GOOGLE_FONTS;
+
+/** CSS font stacks, e.g. '"Outfit", system-ui, sans-serif' */
+export const FONTS = Object.fromEntries(
+  Object.entries(GOOGLE_FONTS).map(([id, [family, , fallback]]) => [
+    id,
+    `"${family}", ${fallback}`,
+  ])
+) as Record<FontId, string>;
+
+/** Google Fonts stylesheet URL for the given fonts (every font when omitted) */
+export function fontsHref(ids = Object.keys(GOOGLE_FONTS) as FontId[]) {
+  const families = [...new Set(ids)].map((id) => {
+    const [family, weights] = GOOGLE_FONTS[id];
+    return `family=${family.replaceAll(" ", "+")}:wght@${weights}`;
+  });
+  return `https://fonts.googleapis.com/css2?${families.join("&")}&display=swap`;
+}
 
 export type ThemeStyle = {
   label: string; // shown in the picker, e.g. "terminal"
@@ -55,9 +75,6 @@ export type ThemeStyle = {
     align: "left" | "center";
     // full-width band: raised surface, accent tint, or ink (darkest / inverted)
     fill: "surface" | "tint" | "ink";
-    // background strands: overall status color, accent, or hero text color
-    wave: "status" | "main" | "fg";
-    waveOpacity: number;
   };
 };
 
@@ -84,8 +101,6 @@ const STYLES = {
       align: "center",
       fill: "surface",
       size: "clamp(2.4rem, 7vw, 4rem)",
-      wave: "status",
-      waveOpacity: 0.55,
     },
     items: "cards",
     label: "pilotlight",
@@ -103,8 +118,6 @@ const STYLES = {
       align: "center",
       fill: "ink",
       size: "clamp(2.6rem, 8vw, 4.6rem)",
-      wave: "fg",
-      waveOpacity: 0.5,
     },
     items: "rows",
     label: "prism",
@@ -126,8 +139,6 @@ const STYLES = {
       align: "left",
       fill: "tint",
       size: "clamp(2rem, 6vw, 3.2rem)",
-      wave: "main",
-      waveOpacity: 0.45,
     },
     items: "rows",
     label: "terminal",
@@ -149,8 +160,6 @@ const STYLES = {
       align: "left",
       fill: "surface",
       size: "clamp(2.4rem, 8vw, 4.4rem)",
-      wave: "main",
-      waveOpacity: 0.6,
     },
     items: "cards",
     label: "blueprint",
@@ -168,8 +177,6 @@ const STYLES = {
       align: "center",
       fill: "tint",
       size: "clamp(2rem, 6vw, 3.4rem)",
-      wave: "main",
-      waveOpacity: 0.7,
     },
     items: "cards",
     label: "signal",
@@ -192,8 +199,6 @@ const STYLES = {
       align: "left",
       fill: "ink",
       size: "clamp(2.8rem, 9vw, 5.2rem)",
-      wave: "status",
-      waveOpacity: 0.65,
     },
     items: "cards",
     label: "graphite",
@@ -373,13 +378,6 @@ function heroColors(fill: ThemeStyle["hero"]["fill"], mode: Theme["mode"]) {
   return ["var(--surface)", "var(--text)"];
 }
 
-// --status only exists inside the hero, so the theme sends a mix weight instead
-const WAVE = {
-  fg: "var(--hero-fg)",
-  main: "var(--main)",
-  status: "var(--main)",
-};
-
 /** Every CSS variable a theme sets; styles.css only ever reads these */
 export function themeVars({
   colors,
@@ -409,9 +407,6 @@ export function themeVars({
     "hero-size": style.hero.size,
     // status colors are tuned for the page, so lift them on an inverted hero
     "hero-lift": style.hero.fill === "ink" && mode === "light" ? "40%" : "0%",
-    "hero-wave": WAVE[style.hero.wave],
-    "hero-wave-status": style.hero.wave === "status" ? "100%" : "0%",
-    "hero-wave-opacity": String(style.hero.waveOpacity),
     "item-bg": cards ? "var(--surface)" : "transparent",
     "item-border": cards ? "var(--edge) var(--line)" : "0px solid transparent",
     "item-divider": "var(--edge) var(--line)",
@@ -430,10 +425,22 @@ const declarations = (t: Theme) =>
     )
     .join(";");
 
+const pair = (darkId: string, lightId: string) => ({
+  dark: THEMES[isThemeId(darkId) ? darkId : DEFAULT_THEMES.dark],
+  light: THEMES[isThemeId(lightId) ? lightId : DEFAULT_THEMES.light],
+});
+
 /** CSS for the chosen pair: light by default, dark when the visitor's OS prefers it */
 export function themeCss(darkId: string, lightId: string) {
-  const dark = THEMES[isThemeId(darkId) ? darkId : DEFAULT_THEMES.dark];
-  const light = THEMES[isThemeId(lightId) ? lightId : DEFAULT_THEMES.light];
+  const { dark, light } = pair(darkId, lightId);
   // html:root outranks the :root fallback in styles.css whatever the load order
   return `html:root{${declarations(light)}}@media (prefers-color-scheme:dark){html:root{${declarations(dark)}}}`;
+}
+
+/** Google Fonts URL with only the fonts the chosen pair uses */
+export function themeFontsHref(darkId: string, lightId: string) {
+  const { dark, light } = pair(darkId, lightId);
+  return fontsHref(
+    [dark, light].flatMap(({ style }) => Object.values(style.fonts))
+  );
 }

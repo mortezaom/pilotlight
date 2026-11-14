@@ -11,9 +11,8 @@ import {
 } from "@/lib/themes";
 import { cn } from "@/lib/utils";
 
-// "\"Funnel Display Variable\", system-ui" -> "Funnel Display"
-const fontName = (id: keyof typeof FONTS) =>
-  FONTS[id].split('"')[1].replace(" Variable", "");
+// '"Funnel Display", system-ui' -> "Funnel Display"
+const fontName = (id: keyof typeof FONTS) => FONTS[id].split('"')[1];
 
 const entries = Object.entries(THEMES) as [ThemeId, Theme][];
 

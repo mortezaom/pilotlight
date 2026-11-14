@@ -2,7 +2,7 @@
 import "@/styles.css";
 import { Toaster } from "@/components/ui/sonner";
 import { getSetting } from "@/lib/settings";
-import { DEFAULT_THEMES, themeCss } from "@/lib/themes";
+import { DEFAULT_THEMES, fontsHref, themeCss, themeFontsHref } from "@/lib/themes";
 
 // toasts: off for the public status page, which then ships no JavaScript
 type Props = { title: string; description?: string; toasts?: boolean };
@@ -10,10 +10,11 @@ const { title, description = "Uptime monitoring and status page", toasts = true 
 
 // The admin's theme pair; the visitor's OS setting picks light or dark
 const settings = await getSetting("settings").catch(() => null);
-const theme = themeCss(
-  settings?.darkTheme ?? DEFAULT_THEMES.dark,
-  settings?.lightTheme ?? DEFAULT_THEMES.light
-);
+const darkId = settings?.darkTheme ?? DEFAULT_THEMES.dark;
+const lightId = settings?.lightTheme ?? DEFAULT_THEMES.light;
+const theme = themeCss(darkId, lightId);
+// the theme picker previews every font; other pages load only the pair's
+const fonts = Astro.url.pathname.startsWith("/dashboard/settings") ? fontsHref() : themeFontsHref(darkId, lightId);
 ---
 
 <!doctype html>
@@ -24,6 +25,9 @@ const theme = themeCss(
     <meta content={description} name="description" />
     <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
     <title>{title}</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href={fonts} rel="stylesheet" />
     <style set:html={theme}></style>
   </head>
   <body class="antialiased">
