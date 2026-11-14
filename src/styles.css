@@ -139,24 +139,14 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
-  /* full-width status band; --status follows the overall level */
+  /* full-width status band */
   .pl-hero {
-    --status: var(--sub);
     position: relative;
     padding-block: 1.25rem clamp(3rem, 8vw, 5rem);
     overflow: hidden;
     color: var(--hero-fg);
     background: var(--hero-bg);
     border-bottom: var(--edge) var(--line);
-  }
-  .pl-hero[data-level="up"] {
-    --status: color-mix(in srgb, var(--up), #fff var(--hero-lift));
-  }
-  .pl-hero[data-level="partial"] {
-    --status: color-mix(in srgb, var(--warn), #fff var(--hero-lift));
-  }
-  .pl-hero[data-level="down"] {
-    --status: color-mix(in srgb, var(--down), #fff var(--hero-lift));
   }
   .pl-hero-body {
     display: flex;
@@ -169,24 +159,36 @@
     font-size: var(--hero-size);
     line-height: 1;
   }
-  .pl-hero-chip {
+  /* one segment per service, colored by its latest check */
+  .pl-meter {
     display: inline-flex;
-    gap: 0.6rem;
+    gap: 0.75rem;
     align-items: center;
-    padding: 0.35rem 0.8rem;
     font-family: var(--font-data);
     font-size: 0.8rem;
-    background: color-mix(in srgb, var(--status) 12%, transparent);
-    border: 1px solid color-mix(in srgb, var(--status) 45%, transparent);
-    border-radius: max(var(--radius), 4px);
+    opacity: 0.85;
   }
-  .pl-pulse {
-    width: 0.55rem;
-    height: 0.55rem;
-    background: var(--status);
-    border-radius: 999px;
-    box-shadow: 0 0 0 0 var(--status);
-    animation: pl-pulse 2.4s ease-out infinite;
+  .pl-meter-bar {
+    display: flex;
+    gap: 3px;
+    width: min(10rem, calc(var(--n) * 1.6rem));
+  }
+  .pl-meter-bar > span {
+    flex: 1;
+    height: 6px;
+    background: color-mix(in srgb, var(--up), #fff var(--hero-lift));
+    border-radius: min(var(--bar-radius), 3px);
+  }
+  .pl-meter-bar > [data-status="timeout"] {
+    background: color-mix(in srgb, var(--warn), #fff var(--hero-lift));
+  }
+  .pl-meter-bar > [data-status="down"],
+  .pl-meter-bar > [data-status="error"] {
+    background: color-mix(in srgb, var(--down), #fff var(--hero-lift));
+  }
+  .pl-meter-bar > [data-status="none"] {
+    background: currentColor;
+    opacity: 0.2;
   }
   .pl-stats {
     display: grid;
@@ -243,19 +245,5 @@
   .pl-bar[data-status="none"] {
     height: 25%;
     background: color-mix(in srgb, var(--sub) 25%, transparent);
-  }
-}
-
-@keyframes pl-pulse {
-  70% {
-    box-shadow: 0 0 0 0.5rem transparent;
-  }
-  100% {
-    box-shadow: 0 0 0 0 transparent;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .pl-pulse {
-    animation: none;
   }
 }
