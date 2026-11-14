@@ -1,11 +1,22 @@
 @import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
+@import "@fontsource-variable/ibm-plex-sans";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource/vt323";
+@import "@fontsource-variable/manrope";
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* The active theme pair is injected by base.astro (src/lib/themes.ts) */
+/* The active theme pair is injected by base.astro from src/lib/themes.ts.
+   Fonts above cost nothing until a theme uses them. */
 @custom-variant dark (@media (prefers-color-scheme: dark));
 
-/* Fallback theme (Pilotlight Day) for anything rendered without the injected one */
+/* Fallback (Pilotlight Day) for anything rendered without the injected theme */
 :root {
   --bg: #f7f8fa;
   --surface: #ffffff;
@@ -16,12 +27,39 @@
   --up: #1f8a52;
   --warn: #9a5c00;
   --down: #c2362f;
+  --font-body: "JetBrains Mono Variable", ui-monospace, monospace;
+  --font-heading: var(--font-body);
+  --font-data: var(--font-body);
+  --heading-weight: 600;
+  --heading-case: none;
+  --heading-tracking: 0;
+  --heading-stretch: 100%;
+  --radius: 3px;
+  --density: 1;
+  --edge: 1px solid;
+  --bar-height: 20px;
+  --bar-up: 50%;
+  --bar-gap: 1px;
+  --bar-radius: 1px;
+  --item-bg: transparent;
+  --item-border: 0px solid transparent;
+  --item-divider: 1px solid var(--line);
+  --item-gap: 0px;
+  --item-pad: 1rem 0;
+  --item-shadow: none;
+  --hero-size: 2.5rem;
+  --hero-align: left;
+  --hero-items: flex-start;
+  --hero-bg: transparent;
+  --hero-fg: var(--text);
+  --hero-border: 0px solid transparent;
+  --hero-pad: 0px;
+  --hero-shadow: none;
 
-  /* shadcn/ui variables, all derived from the nine theme colors */
-  --radius: 0.25rem;
+  /* shadcn/ui variables, all derived from the theme */
   --background: var(--bg);
   --foreground: var(--text);
-  --card: var(--bg);
+  --card: var(--surface);
   --card-foreground: var(--text);
   --popover: var(--surface);
   --popover-foreground: var(--text);
@@ -70,14 +108,11 @@
   --color-warn: var(--warn);
   --color-down: var(--down);
 
-  --font-sans:
-    "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, Consolas,
-    monospace;
-  --font-mono:
-    "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, Consolas,
-    monospace;
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-data);
+  --font-heading: var(--font-heading);
 
-  --radius-sm: calc(var(--radius) - 2px);
+  --radius-sm: max(0px, calc(var(--radius) - 2px));
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);
   --radius-xl: calc(var(--radius) + 4px);
@@ -92,7 +127,89 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-sans);
+    font-family: var(--font-body);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    font-weight: var(--heading-weight);
+    font-stretch: var(--heading-stretch);
+    text-transform: var(--heading-case);
+    letter-spacing: var(--heading-tracking);
+  }
+}
+
+/* Theme-shaped building blocks for the status page and dashboard lists */
+@layer components {
+  .pl-data {
+    font-family: var(--font-data);
     font-variant-numeric: tabular-nums;
+  }
+  .pl-label {
+    font-family: var(--font-data);
+    font-size: 0.75rem;
+    color: var(--sub);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .pl-hero {
+    display: flex;
+    flex-direction: column;
+    gap: calc(1.25rem * var(--density));
+    align-items: var(--hero-items);
+    padding: var(--hero-pad);
+    color: var(--hero-fg);
+    text-align: var(--hero-align);
+    background: var(--hero-bg);
+    border: var(--hero-border);
+    border-radius: calc(var(--radius) * 1.5);
+    box-shadow: var(--hero-shadow);
+  }
+  .pl-hero-title {
+    font-size: var(--hero-size);
+    line-height: 0.98;
+  }
+  .pl-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--item-gap);
+  }
+  .pl-item {
+    display: flex;
+    flex-direction: column;
+    gap: calc(0.6rem * var(--density));
+    padding: var(--item-pad);
+    background: var(--item-bg);
+    border: var(--item-border);
+    border-bottom: var(--item-divider);
+    border-radius: var(--radius);
+    box-shadow: var(--item-shadow);
+  }
+  .pl-bars {
+    display: flex;
+    gap: var(--bar-gap);
+    align-items: flex-end;
+    height: var(--bar-height);
+  }
+  .pl-bar {
+    flex: 1;
+    height: 100%;
+    border-radius: var(--bar-radius);
+  }
+  .pl-bar[data-status="up"] {
+    height: var(--bar-up);
+    background: var(--up);
+  }
+  .pl-bar[data-status="timeout"] {
+    background: var(--warn);
+  }
+  .pl-bar[data-status="down"],
+  .pl-bar[data-status="error"] {
+    background: var(--down);
+  }
+  .pl-bar[data-status="none"] {
+    height: 25%;
+    background: color-mix(in srgb, var(--sub) 25%, transparent);
   }
 }

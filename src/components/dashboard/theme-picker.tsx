@@ -2,10 +2,31 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { apiFetch, errorMessage } from "@/lib/api-client";
-import { THEME_TOKENS, THEMES, type Theme, type ThemeId } from "@/lib/themes";
+import {
+  FONTS,
+  THEMES,
+  type Theme,
+  type ThemeId,
+  themeVars,
+} from "@/lib/themes";
 import { cn } from "@/lib/utils";
 
 const entries = Object.entries(THEMES) as [ThemeId, Theme][];
+
+const SAMPLE = [
+  "up",
+  "up",
+  "up",
+  "up",
+  "up",
+  "down",
+  "up",
+  "up",
+  "warn",
+  "up",
+  "up",
+  "up",
+] as const;
 
 /** Shows the theme on this page right away when it matches the OS mode */
 function preview(theme: Theme) {
@@ -13,11 +34,10 @@ function preview(theme: Theme) {
   if ((theme.mode === "dark") !== dark) {
     return;
   }
-  for (const token of THEME_TOKENS) {
-    document.documentElement.style.setProperty(
-      `--${token}`,
-      theme.colors[token]
-    );
+  for (const [name, value] of Object.entries(themeVars(theme))) {
+    if (name !== "color-scheme") {
+      document.documentElement.style.setProperty(`--${name}`, value);
+    }
   }
 }
 
@@ -37,14 +57,15 @@ function ThemeGroup({
           ? "dark theme · for visitors in dark mode"
           : "light theme · for visitors in light mode"}
       </legend>
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-2">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] gap-3">
         {entries
           .filter(([, theme]) => theme.mode === mode)
-          .map(([id, { colors, name }]) => (
+          .map(([id, { colors, name, style }]) => (
+            // Each swatch is drawn in its own theme: colors, font and corners
             <button
               aria-pressed={id === value}
               className={cn(
-                "flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-left outline-offset-2",
+                "flex flex-col gap-3 border p-3 text-left outline-offset-2",
                 id === value && "outline-main outline-2"
               )}
               key={id}
@@ -52,19 +73,49 @@ function ThemeGroup({
               style={{
                 background: colors.bg,
                 borderColor: colors.line,
+                borderRadius: style.radius,
                 color: colors.text,
               }}
               type="button"
             >
-              <span className="truncate">{name.toLowerCase()}</span>
-              <span aria-hidden="true" className="flex shrink-0 gap-1">
-                {[colors.main, colors.up, colors.warn, colors.down].map((c) => (
+              <span
+                className="text-lg leading-none"
+                style={{
+                  fontFamily: FONTS[style.fonts.heading],
+                  fontStretch: style.heading.stretch,
+                  fontWeight: style.heading.weight,
+                  letterSpacing: style.heading.tracking,
+                  textTransform: style.heading.case,
+                }}
+              >
+                {name}
+              </span>
+              <span
+                aria-hidden="true"
+                className="flex h-3 items-end"
+                style={{ gap: style.bars.gap }}
+              >
+                {SAMPLE.map((status, i) => (
                   <span
-                    className="size-2.5 rounded-full"
-                    key={c}
-                    style={{ background: c }}
+                    className="flex-1"
+                    // biome-ignore lint/suspicious/noArrayIndexKey: static sample
+                    key={i}
+                    style={{
+                      background: colors[status],
+                      borderRadius: style.bars.radius,
+                      height: status === "up" ? style.bars.up : "100%",
+                    }}
                   />
                 ))}
+              </span>
+              <span
+                className="text-xs"
+                style={{
+                  color: colors.sub,
+                  fontFamily: FONTS[style.fonts.data],
+                }}
+              >
+                {style.label}
               </span>
             </button>
           ))}

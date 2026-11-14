@@ -8,14 +8,6 @@ const { history, name } = Astro.props;
 const BARS = 50;
 const bars = [...Array.from({ length: BARS - history.length }, () => null), ...history.slice(-BARS)];
 
-// Height encodes status as well as color: failed checks stand out without color
-const style = {
-  down: "h-full bg-down",
-  error: "h-full bg-down",
-  timeout: "h-full bg-warn",
-  up: "h-1/2 bg-up",
-} as const;
-
 const failed = history.filter((c) => c.status !== "up").length;
 const summary =
   history.length === 0
@@ -23,16 +15,18 @@ const summary =
     : `${name}: last ${history.length} checks, ${history.length - failed} up, ${failed} failed`;
 ---
 
-<div class="flex h-5 items-end gap-px" aria-hidden="true">
+<!-- Height encodes status as well as color: failed checks stand out without color -->
+<div aria-hidden="true" class="pl-bars">
   {
     bars.map((check) =>
       check ? (
         <span
-          class:list={["flex-1 rounded-[1px]", style[check.status]]}
+          class="pl-bar"
+          data-status={check.status}
           title={`${formatUtc(check.timestamp)} · ${check.status}${check.responseTime === null ? "" : ` · ${check.responseTime} ms`}`}
         />
       ) : (
-        <span class="bg-sub/25 h-1/4 flex-1 rounded-[1px]" />
+        <span class="pl-bar" data-status="none" />
       )
     )
   }

@@ -70,9 +70,10 @@ describe("overallStatus", () => {
     expect(overallStatus([]).level).toBe("unknown");
     expect(overallStatus([undefined]).level).toBe("unknown");
     expect(overallStatus(["up", "up"]).level).toBe("up");
-    expect(overallStatus(["up", "down"]).label).toBe(
-      "Partial outage (1 of 2 services affected)"
-    );
+    expect(overallStatus(["up", "down"])).toMatchObject({
+      detail: "1 of 2 services affected",
+      label: "Partial outage",
+    });
     expect(overallStatus(["timeout", "error"]).level).toBe("down");
   });
 });
