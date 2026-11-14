@@ -1,7 +1,7 @@
 // Admin-selectable themes. A theme is a complete look: a palette (nine colors)
 // plus a style (fonts, radius, borders, panels, spacing, history bars, hero).
 // Everything is emitted as CSS variables, so the layout stays the same while
-// each theme reshapes it. Add one by adding an entry to THEMES.
+// each theme reshapes it. Each family ships a dark and a light variant.
 
 export const THEME_TOKENS = [
   "bg", // page background
@@ -19,39 +19,45 @@ export type ThemeColors = Record<(typeof THEME_TOKENS)[number], string>;
 
 // Font stacks; each is loaded in styles.css but only downloaded when used
 export const FONTS = {
-  archivo: '"Archivo Variable", "Arial Narrow", system-ui, sans-serif',
-  bricolage: '"Bricolage Grotesque Variable", system-ui, sans-serif',
-  fraunces: '"Fraunces Variable", Georgia, serif',
+  "funnel-display": '"Funnel Display Variable", system-ui, sans-serif',
   geist: '"Geist Variable", system-ui, sans-serif',
   "geist-mono": '"Geist Mono Variable", ui-monospace, monospace',
-  "ibm-plex-mono": '"IBM Plex Mono", ui-monospace, monospace',
-  "ibm-plex-sans": '"IBM Plex Sans Variable", system-ui, sans-serif',
+  "google-sans-code": '"Google Sans Code Variable", ui-monospace, monospace',
+  "google-sans-flex": '"Google Sans Flex Variable", system-ui, sans-serif',
+  "inter-tight": '"Inter Tight Variable", system-ui, sans-serif',
   "jetbrains-mono": '"JetBrains Mono Variable", ui-monospace, monospace',
-  manrope: '"Manrope Variable", system-ui, sans-serif',
-  vt323: '"VT323", ui-monospace, monospace',
+  "martian-mono": '"Martian Mono Variable", ui-monospace, monospace',
+  onest: '"Onest Variable", system-ui, sans-serif',
+  outfit: '"Outfit Variable", system-ui, sans-serif',
+  "space-grotesk": '"Space Grotesk Variable", system-ui, sans-serif',
+  "space-mono": '"Space Mono", ui-monospace, monospace',
+  unbounded: '"Unbounded Variable", system-ui, sans-serif',
 } as const;
 type FontId = keyof typeof FONTS;
 
 export type ThemeStyle = {
-  label: string; // shown in the picker, e.g. "editorial"
+  label: string; // shown in the picker, e.g. "terminal"
   fonts: { body: FontId; heading: FontId; data: FontId };
   heading: {
     weight: number;
     case: "none" | "uppercase" | "lowercase";
     tracking: string;
-    stretch: string; // font-stretch, e.g. "75%" for condensed display faces
   };
   radius: string;
   density: number; // spacing multiplier
   // service list: separated rows, or individual cards
   items: "rows" | "cards";
-  border: string; // card / box border, e.g. "1px solid", "2px solid", "1px dashed", "0px solid"
+  border: string; // card / box border, e.g. "1px solid", "2px solid", "0px solid"
   shadow: string; // card shadow; may use theme colors via var()
   bars: { height: string; up: string; gap: string; radius: string };
   hero: {
     size: string; // headline font size
     align: "left" | "center";
-    fill: "none" | "surface" | "tint" | "solid"; // hero background
+    // full-width band: raised surface, accent tint, or ink (darkest / inverted)
+    fill: "surface" | "tint" | "ink";
+    // background strands: overall status color, accent, or hero text color
+    wave: "status" | "main" | "fg";
+    waveOpacity: number;
   };
 };
 
@@ -63,161 +69,136 @@ export type Theme = {
 };
 
 const STYLES = {
-  // Monkeytype-like: one monospace face, rows, square-ish blocks
-  instrument: {
-    bars: { gap: "1px", height: "20px", radius: "1px", up: "50%" },
+  // Default: friendly geometric sans, soft cards, blue-flame accent
+  pilotlight: {
+    bars: { gap: "2px", height: "24px", radius: "3px", up: "55%" },
     border: "1px solid",
-    density: 1,
+    density: 1.05,
+    fonts: {
+      body: "google-sans-flex",
+      data: "google-sans-code",
+      heading: "google-sans-flex",
+    },
+    heading: { case: "none", tracking: "-0.03em", weight: 600 },
+    hero: {
+      align: "center",
+      fill: "surface",
+      size: "clamp(2.4rem, 7vw, 4rem)",
+      wave: "status",
+      waveOpacity: 0.55,
+    },
+    items: "cards",
+    label: "pilotlight",
+    radius: "14px",
+    shadow: "none",
+  },
+  // Monochrome, light display type, ink hero with white strands
+  prism: {
+    bars: { gap: "3px", height: "20px", radius: "999px", up: "45%" },
+    border: "1px solid",
+    density: 1.15,
+    fonts: { body: "geist", data: "geist-mono", heading: "outfit" },
+    heading: { case: "none", tracking: "-0.035em", weight: 400 },
+    hero: {
+      align: "center",
+      fill: "ink",
+      size: "clamp(2.6rem, 8vw, 4.6rem)",
+      wave: "fg",
+      waveOpacity: 0.5,
+    },
+    items: "rows",
+    label: "prism",
+    radius: "10px",
+    shadow: "none",
+  },
+  // One monospace face, lowercase, square blocks
+  terminal: {
+    bars: { gap: "1px", height: "18px", radius: "0px", up: "50%" },
+    border: "1px solid",
+    density: 0.95,
     fonts: {
       body: "jetbrains-mono",
       data: "jetbrains-mono",
       heading: "jetbrains-mono",
     },
-    heading: {
-      case: "lowercase",
-      stretch: "100%",
-      tracking: "-0.01em",
-      weight: 600,
+    heading: { case: "lowercase", tracking: "-0.02em", weight: 700 },
+    hero: {
+      align: "left",
+      fill: "tint",
+      size: "clamp(2rem, 6vw, 3.2rem)",
+      wave: "main",
+      waveOpacity: 0.45,
     },
-    hero: { align: "left", fill: "none", size: "clamp(2rem, 6vw, 3rem)" },
     items: "rows",
-    label: "instrument",
-    radius: "3px",
+    label: "terminal",
+    radius: "0px",
     shadow: "none",
   },
-  // Rounded, airy cards with pill bars
-  soft: {
-    bars: { gap: "3px", height: "26px", radius: "999px", up: "60%" },
+  // Technical drawing: grotesk caps, hard 2px rules, no rounding
+  blueprint: {
+    bars: { gap: "2px", height: "28px", radius: "0px", up: "50%" },
+    border: "2px solid",
+    density: 1,
+    fonts: {
+      body: "space-grotesk",
+      data: "space-mono",
+      heading: "space-grotesk",
+    },
+    heading: { case: "uppercase", tracking: "-0.01em", weight: 700 },
+    hero: {
+      align: "left",
+      fill: "surface",
+      size: "clamp(2.4rem, 8vw, 4.4rem)",
+      wave: "main",
+      waveOpacity: 0.6,
+    },
+    items: "cards",
+    label: "blueprint",
+    radius: "0px",
+    shadow: "none",
+  },
+  // Wide display type, glowing borderless cards, pill bars
+  signal: {
+    bars: { gap: "3px", height: "26px", radius: "999px", up: "55%" },
     border: "0px solid",
     density: 1.15,
-    fonts: { body: "geist", data: "geist-mono", heading: "geist" },
-    heading: {
-      case: "none",
-      stretch: "100%",
-      tracking: "-0.035em",
-      weight: 650,
-    },
+    fonts: { body: "onest", data: "martian-mono", heading: "unbounded" },
+    heading: { case: "none", tracking: "-0.02em", weight: 600 },
     hero: {
       align: "center",
-      fill: "surface",
-      size: "clamp(2.2rem, 6vw, 3.4rem)",
+      fill: "tint",
+      size: "clamp(2rem, 6vw, 3.4rem)",
+      wave: "main",
+      waveOpacity: 0.7,
     },
     items: "cards",
-    label: "soft",
-    radius: "16px",
-    shadow: "none",
+    label: "signal",
+    radius: "18px",
+    shadow:
+      "0 0 0 1px var(--line), 0 12px 32px -12px color-mix(in srgb, var(--main) 35%, transparent)",
   },
-  // Condensed uppercase display, hard rules, no rounding
-  swiss: {
-    bars: { gap: "1px", height: "34px", radius: "0px", up: "55%" },
-    border: "2px solid",
-    density: 1,
-    fonts: { body: "ibm-plex-sans", data: "ibm-plex-mono", heading: "archivo" },
-    heading: {
-      case: "uppercase",
-      stretch: "62%",
-      tracking: "-0.01em",
-      weight: 800,
-    },
-    hero: { align: "left", fill: "none", size: "clamp(3rem, 11vw, 6rem)" },
-    items: "rows",
-    label: "swiss",
-    radius: "0px",
-    shadow: "none",
-  },
-  // Pixel headings, dashed boxes, terminal feel
-  retro: {
-    bars: { gap: "2px", height: "18px", radius: "0px", up: "45%" },
-    border: "1px dashed",
-    density: 0.95,
-    fonts: { body: "ibm-plex-mono", data: "vt323", heading: "vt323" },
-    heading: {
-      case: "uppercase",
-      stretch: "100%",
-      tracking: "0.03em",
-      weight: 400,
-    },
-    hero: { align: "left", fill: "surface", size: "clamp(3rem, 10vw, 5rem)" },
-    items: "cards",
-    label: "retro",
-    radius: "0px",
-    shadow: "none",
-  },
-  // Thick outlines and offset shadows
-  brutal: {
-    bars: { gap: "2px", height: "26px", radius: "3px", up: "55%" },
+  // Heavy display headline, thick outlines, offset shadows, inverted hero
+  graphite: {
+    bars: { gap: "2px", height: "30px", radius: "2px", up: "55%" },
     border: "2px solid",
     density: 1.05,
-    fonts: { body: "manrope", data: "geist-mono", heading: "bricolage" },
-    heading: {
-      case: "none",
-      stretch: "100%",
-      tracking: "-0.04em",
-      weight: 800,
-    },
-    hero: { align: "left", fill: "solid", size: "clamp(2.4rem, 7vw, 4rem)" },
-    items: "cards",
-    label: "brutal",
-    radius: "10px",
-    shadow: "5px 5px 0 var(--text)",
-  },
-  // Serif headlines, generous space, thin dot bars
-  editorial: {
-    bars: { gap: "4px", height: "16px", radius: "999px", up: "38%" },
-    border: "0px solid",
-    density: 1.3,
-    fonts: { body: "geist", data: "geist-mono", heading: "fraunces" },
-    heading: {
-      case: "none",
-      stretch: "100%",
-      tracking: "-0.02em",
-      weight: 500,
-    },
-    hero: { align: "center", fill: "none", size: "clamp(2.6rem, 8vw, 4.5rem)" },
-    items: "cards",
-    label: "editorial",
-    radius: "20px",
-    shadow: "0 1px 2px color-mix(in srgb, var(--text) 8%, transparent)",
-  },
-  // Glowing outlines on dark glass
-  neon: {
-    bars: { gap: "2px", height: "22px", radius: "2px", up: "40%" },
-    border: "1px solid",
-    density: 1,
-    fonts: { body: "geist-mono", data: "geist-mono", heading: "geist" },
-    heading: {
-      case: "lowercase",
-      stretch: "100%",
-      tracking: "-0.03em",
-      weight: 700,
-    },
-    hero: { align: "left", fill: "tint", size: "clamp(2.2rem, 7vw, 3.6rem)" },
-    items: "cards",
-    label: "neon",
-    radius: "8px",
-    shadow: "0 0 24px color-mix(in srgb, var(--main) 22%, transparent)",
-  },
-  // Printed report: serif titles, plex body, ruled lines
-  print: {
-    bars: { gap: "1px", height: "20px", radius: "0px", up: "50%" },
-    border: "1px solid",
-    density: 1.1,
     fonts: {
-      body: "ibm-plex-sans",
-      data: "ibm-plex-mono",
-      heading: "fraunces",
+      body: "inter-tight",
+      data: "jetbrains-mono",
+      heading: "funnel-display",
     },
-    heading: {
-      case: "none",
-      stretch: "100%",
-      tracking: "-0.015em",
-      weight: 700,
+    heading: { case: "none", tracking: "-0.04em", weight: 800 },
+    hero: {
+      align: "left",
+      fill: "ink",
+      size: "clamp(2.8rem, 9vw, 5.2rem)",
+      wave: "status",
+      waveOpacity: 0.65,
     },
-    hero: { align: "left", fill: "none", size: "clamp(2.4rem, 7vw, 3.8rem)" },
-    items: "rows",
-    label: "print",
-    radius: "2px",
-    shadow: "none",
+    items: "cards",
+    label: "graphite",
+    radius: "4px",
+    shadow: "4px 4px 0 var(--text)",
   },
 } satisfies Record<string, ThemeStyle>;
 
@@ -233,161 +214,171 @@ const theme = (
   style,
 });
 
-// Palettes adapted from each project's published colors (some tuned for contrast)
+// Palette order: bg, surface, line, text, sub, main, up, warn, down
 export const THEMES = {
-  "catppuccin-latte": theme("Catppuccin Latte", "light", STYLES.soft, [
-    "#eff1f5",
-    "#e6e9ef",
-    "#ccd0da",
-    "#4c4f69",
-    "#5c5f77",
-    "#8839ef",
-    "#368a24",
-    "#c46a0a",
-    "#d20f39",
+  "pilotlight-dark": theme("Pilotlight Dark", "dark", STYLES.pilotlight, [
+    "#0c0d10",
+    "#15171c",
+    "#262a31",
+    "#eceef2",
+    "#8d94a0",
+    "#6ea8ff",
+    "#3fd39a",
+    "#f5b74f",
+    "#ff6b6b",
   ]),
-  "catppuccin-mocha": theme("Catppuccin Mocha", "dark", STYLES.soft, [
-    "#1e1e2e",
-    "#313244",
-    "#45475a",
-    "#cdd6f4",
-    "#a6adc8",
-    "#cba6f7",
-    "#a6e3a1",
-    "#f9e2af",
-    "#f38ba8",
-  ]),
-  dracula: theme("Dracula", "dark", STYLES.brutal, [
-    "#282a36",
-    "#343746",
-    "#44475a",
-    "#f8f8f2",
-    "#a2acd0",
-    "#bd93f9",
-    "#50fa7b",
-    "#ffb86c",
-    "#ff5555",
-  ]),
-  "gruvbox-dark": theme("Gruvbox Dark", "dark", STYLES.retro, [
-    "#282828",
-    "#3c3836",
-    "#504945",
-    "#ebdbb2",
-    "#a89984",
-    "#d79921",
-    "#b8bb26",
-    "#fe8019",
-    "#fb4934",
-  ]),
-  "gruvbox-light": theme("Gruvbox Light", "light", STYLES.retro, [
-    "#fbf1c7",
-    "#f2e5bc",
-    "#d5c4a1",
-    "#3c3836",
-    "#665c54",
-    "#9d6a0f",
-    "#5f6b0b",
-    "#af3a03",
-    "#9d0006",
-  ]),
-  nord: theme("Nord", "dark", STYLES.swiss, [
-    "#2e3440",
-    "#3b4252",
-    "#4c566a",
-    "#eceff4",
-    "#d8dee9",
-    "#88c0d0",
-    "#a3be8c",
-    "#ebcb8b",
-    "#d08770",
-  ]),
-  "pilotlight-day": theme("Pilotlight Day", "light", STYLES.instrument, [
-    "#f7f8fa",
+  "pilotlight-light": theme("Pilotlight Light", "light", STYLES.pilotlight, [
+    "#f5f6f8",
     "#ffffff",
-    "#dde1e6",
-    "#16191d",
-    "#545c67",
-    "#1f6fd1",
-    "#1f8a52",
-    "#9a5c00",
-    "#c2362f",
+    "#e1e4e9",
+    "#14161a",
+    "#5d6470",
+    "#2160e0",
+    "#15803d",
+    "#b45309",
+    "#dc2626",
   ]),
-  "pilotlight-night": theme("Pilotlight Night", "dark", STYLES.instrument, [
-    "#121417",
-    "#1a1d21",
-    "#2a2e34",
-    "#e6e8eb",
-    "#8b93a0",
-    "#5aa9ff",
-    "#3fbf7f",
-    "#e5a54b",
-    "#ef6a5f",
+  "prism-dark": theme("Prism Dark", "dark", STYLES.prism, [
+    "#0a0a0a",
+    "#121213",
+    "#242426",
+    "#f5f5f5",
+    "#8e8e93",
+    "#ffffff",
+    "#4ade80",
+    "#fbbf24",
+    "#f87171",
   ]),
-  "rose-pine": theme("Rosé Pine", "dark", STYLES.editorial, [
-    "#191724",
-    "#1f1d2e",
-    "#26233a",
-    "#e0def4",
-    "#908caa",
-    "#c4a7e7",
-    "#9ccfd8",
-    "#f6c177",
-    "#eb6f92",
+  "prism-light": theme("Prism Light", "light", STYLES.prism, [
+    "#ffffff",
+    "#f6f6f7",
+    "#e5e5e8",
+    "#0a0a0a",
+    "#6b6b70",
+    "#0a0a0a",
+    "#16a34a",
+    "#b45309",
+    "#dc2626",
   ]),
-  "rose-pine-dawn": theme("Rosé Pine Dawn", "light", STYLES.editorial, [
-    "#faf4ed",
-    "#fffaf3",
-    "#f2e9e1",
-    "#575279",
-    "#6e6a86",
-    "#907aa9",
-    "#286983",
-    "#b36b10",
-    "#b4637a",
+  "terminal-dark": theme("Terminal Dark", "dark", STYLES.terminal, [
+    "#0a0d0b",
+    "#111612",
+    "#223026",
+    "#d5f2dc",
+    "#7f9a86",
+    "#56d4c8",
+    "#4ade80",
+    "#facc15",
+    "#ff6b6b",
   ]),
-  "solarized-light": theme("Solarized Light", "light", STYLES.print, [
-    "#fdf6e3",
-    "#eee8d5",
-    "#ddd6c1",
-    "#4f6168",
-    "#657b83",
-    "#1f6fa8",
-    "#6b7a00",
-    "#8f6c00",
-    "#c42a28",
+  "terminal-light": theme("Terminal Light", "light", STYLES.terminal, [
+    "#f3f5ef",
+    "#fafbf7",
+    "#d6ddd0",
+    "#15241a",
+    "#56655a",
+    "#0f766e",
+    "#15803d",
+    "#a16207",
+    "#b91c1c",
   ]),
-  "tokyo-night": theme("Tokyo Night", "dark", STYLES.neon, [
-    "#1a1b26",
-    "#24283b",
-    "#414868",
-    "#c0caf5",
-    "#8a91b8",
-    "#7aa2f7",
-    "#9ece6a",
-    "#e0af68",
-    "#f7768e",
+  "blueprint-dark": theme("Blueprint Dark", "dark", STYLES.blueprint, [
+    "#081326",
+    "#0d1c36",
+    "#22406b",
+    "#e6f0ff",
+    "#8ba5cb",
+    "#5cc8ff",
+    "#4ade9a",
+    "#ffc35c",
+    "#ff7a7a",
+  ]),
+  "blueprint-light": theme("Blueprint Light", "light", STYLES.blueprint, [
+    "#edf3fb",
+    "#f8fbff",
+    "#b9cde8",
+    "#0b1f3a",
+    "#4a6283",
+    "#0b5fc0",
+    "#137a4a",
+    "#9a5800",
+    "#c0302b",
+  ]),
+  "signal-dark": theme("Signal Dark", "dark", STYLES.signal, [
+    "#0d0b14",
+    "#17131f",
+    "#2a2438",
+    "#efeaff",
+    "#9a91b3",
+    "#a78bfa",
+    "#34d399",
+    "#fbbf24",
+    "#fb7185",
+  ]),
+  "signal-light": theme("Signal Light", "light", STYLES.signal, [
+    "#f7f5fc",
+    "#ffffff",
+    "#e4def3",
+    "#1b1530",
+    "#625a7a",
+    "#6d28d9",
+    "#047857",
+    "#b45309",
+    "#be123c",
+  ]),
+  "graphite-dark": theme("Graphite Dark", "dark", STYLES.graphite, [
+    "#121212",
+    "#1b1b1b",
+    "#333333",
+    "#f2f2f2",
+    "#9a9a9a",
+    "#ff7a33",
+    "#3ddc84",
+    "#ffc247",
+    "#ff5c5c",
+  ]),
+  "graphite-light": theme("Graphite Light", "light", STYLES.graphite, [
+    "#f2f1ee",
+    "#fbfaf8",
+    "#d7d4cd",
+    "#151515",
+    "#5f5c57",
+    "#c94600",
+    "#187a3f",
+    "#955f00",
+    "#c42b2b",
   ]),
 } satisfies Record<string, Theme>;
 
 export type ThemeId = keyof typeof THEMES;
 
 export const DEFAULT_THEMES = {
-  dark: "pilotlight-night",
-  light: "pilotlight-day",
+  dark: "pilotlight-dark",
+  light: "pilotlight-light",
 } as const satisfies Record<Theme["mode"], ThemeId>;
 
 export const isThemeId = (id: string): id is ThemeId => id in THEMES;
 
-const HERO_FILL = {
-  none: ["transparent", "var(--text)", "0px solid transparent"],
-  solid: ["var(--main)", "var(--bg)", "var(--edge) var(--text)"],
-  surface: ["var(--surface)", "var(--text)", "var(--edge) var(--line)"],
-  tint: [
-    "color-mix(in srgb, var(--main) 12%, var(--bg))",
-    "var(--text)",
-    "var(--edge) color-mix(in srgb, var(--main) 45%, transparent)",
-  ],
-} as const;
+/** Hero band background and text color for each fill */
+function heroColors(fill: ThemeStyle["hero"]["fill"], mode: Theme["mode"]) {
+  if (fill === "ink") {
+    // darker than the page in dark mode, inverted in light mode
+    return mode === "dark"
+      ? ["color-mix(in srgb, var(--bg) 40%, #000)", "var(--text)"]
+      : ["var(--text)", "var(--bg)"];
+  }
+  if (fill === "tint") {
+    return ["color-mix(in srgb, var(--main) 9%, var(--bg))", "var(--text)"];
+  }
+  return ["var(--surface)", "var(--text)"];
+}
+
+// --status only exists inside the hero, so the theme sends a mix weight instead
+const WAVE = {
+  fg: "var(--hero-fg)",
+  main: "var(--main)",
+  status: "var(--main)",
+};
 
 /** Every CSS variable a theme sets; styles.css only ever reads these */
 export function themeVars({
@@ -396,7 +387,7 @@ export function themeVars({
   style,
 }: Theme): Record<string, string> {
   const cards = style.items === "cards";
-  const [heroBg, heroFg, heroBorder] = HERO_FILL[style.hero.fill];
+  const [heroBg, heroFg] = heroColors(style.hero.fill, mode);
   return {
     ...colors,
     "bar-gap": style.bars.gap,
@@ -409,21 +400,21 @@ export function themeVars({
     "font-data": FONTS[style.fonts.data],
     "font-heading": FONTS[style.fonts.heading],
     "heading-case": style.heading.case,
-    "heading-stretch": style.heading.stretch,
     "heading-tracking": style.heading.tracking,
     "heading-weight": String(style.heading.weight),
     "hero-align": style.hero.align,
     "hero-items": style.hero.align === "center" ? "center" : "flex-start",
     "hero-bg": heroBg,
-    "hero-border":
-      style.hero.fill === "none" ? "0px solid transparent" : heroBorder,
     "hero-fg": heroFg,
-    "hero-shadow": style.hero.fill === "none" ? "none" : style.shadow,
-    "hero-pad": style.hero.fill === "none" ? "0px" : "clamp(1.5rem, 5vw, 3rem)",
     "hero-size": style.hero.size,
+    // status colors are tuned for the page, so lift them on an inverted hero
+    "hero-lift": style.hero.fill === "ink" && mode === "light" ? "40%" : "0%",
+    "hero-wave": WAVE[style.hero.wave],
+    "hero-wave-status": style.hero.wave === "status" ? "100%" : "0%",
+    "hero-wave-opacity": String(style.hero.waveOpacity),
     "item-bg": cards ? "var(--surface)" : "transparent",
     "item-border": cards ? "var(--edge) var(--line)" : "0px solid transparent",
-    "item-divider": cards ? "0px solid transparent" : "var(--edge) var(--line)",
+    "item-divider": "var(--edge) var(--line)",
     "item-gap": cards ? "0.75rem" : "0px",
     "item-pad": cards ? "1.1rem 1.25rem" : "1rem 0",
     "item-shadow": cards ? style.shadow : "none",

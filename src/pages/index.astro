@@ -1,4 +1,5 @@
 ---
+import HeroWave from "@/components/hero-wave.astro";
 import StatusBars from "@/components/status-bars.astro";
 import { STATUS_LABELS } from "@/data/services-data";
 import { getServicesWithStatus, toPublicService } from "@/data/services-storage";
@@ -17,7 +18,6 @@ const [branding, settings, services] = await Promise.all([
 ]);
 const visible = services.filter((s) => s.public).map(toPublicService);
 const overall = overallStatus(visible.map((s) => s.status));
-const dot = { down: "bg-down", partial: "bg-warn", unknown: "bg-sub", up: "bg-up" }[overall.level];
 
 // Freshness: say when checks last ran, and warn when the cron seems stopped
 const lastCheck = visible.map((s) => s.lastCheck).filter((t) => t !== undefined).sort().at(-1);
@@ -44,56 +44,61 @@ const detail = (service: (typeof visible)[number]) => {
   return service.responseTime === undefined ? pct : `${pct} · ${service.responseTime} ms`;
 };
 
+const title = branding?.title ?? "Pilotlight";
+
 // Served from Workers Cache: the Worker renders at most once a minute
 Astro.response.headers.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
 ---
 
-<Base description={branding?.description} title={branding?.title ?? "Pilotlight"} toasts={false}>
-  <main class="mx-auto flex min-h-svh w-full max-w-3xl flex-col gap-10 px-4 py-8 sm:gap-14 sm:py-12">
-    <header class="flex items-center justify-between gap-4">
-      <a class="text-main flex items-center gap-2 font-semibold" href="/">
-        {branding?.imageUrl && <img alt="" class="size-6" height="24" src={branding.imageUrl} width="24" />}
-        {branding?.title ?? "Pilotlight"}
-      </a>
-      {lastCheck && <time class="pl-data text-sub text-xs" datetime={lastCheck}>{formatUtc(lastCheck)}</time>}
-    </header>
+<Base description={branding?.description} title={title} toasts={false}>
+  <div class="flex min-h-svh flex-col">
+    <section aria-labelledby="overall" class="pl-hero" data-level={overall.level}>
+      <HeroWave />
+      <div class="pl-wrap relative flex flex-col gap-12 sm:gap-16">
+        <header class="flex items-center justify-between gap-4">
+          <a class="flex items-center gap-2 font-semibold" href="/">
+            {branding?.imageUrl && <img alt="" class="size-6" height="24" src={branding.imageUrl} width="24" />}
+            {title}
+          </a>
+          {lastCheck && <time class="pl-data text-xs opacity-70" datetime={lastCheck}>{formatUtc(lastCheck)}</time>}
+        </header>
 
-    {
-      
-      visible.length === 0 ? (
-        <section class="pl-hero">
-          <h1 class="pl-hero-title">Nothing to report yet</h1>
-          <p class="opacity-80">No services are being monitored.</p>
-        </section>
-      ) : (
-        <>
-          <section aria-labelledby="overall" class="pl-hero">
-            <p class="pl-label" style="color: inherit; opacity: 0.75">current status</p>
-            <h1 class="pl-hero-title flex items-center gap-[0.35em]" id="overall">
-              <span aria-hidden="true" class:list={["inline-block size-[0.32em] shrink-0 rounded-full", dot]} />
-              {overall.label}
-            </h1>
-            <p class="opacity-80">{overall.detail}</p>
-            {branding?.announcement && (
-              <p class="max-w-prose border-l-2 border-current pl-3 text-left">{branding.announcement}</p>
-            )}
-            {stale && lastCheck && (
-              <p class="font-semibold" role="status">
-                Checks may have stopped: the last one ran {formatAge(lastCheck)} ago.
-              </p>
-            )}
-            <dl class="grid w-full grid-cols-3 gap-4 pt-2 sm:max-w-xl">
+        <div class="pl-hero-body">
+          <p class="pl-hero-chip">
+            <span aria-hidden="true" class="pl-pulse" />
+            {overall.detail}
+          </p>
+          <h1 class="pl-hero-title" id="overall">{visible.length === 0 ? "Nothing to report yet" : overall.label}</h1>
+          {branding?.announcement && <p class="max-w-prose opacity-85">{branding.announcement}</p>}
+          {stale && lastCheck && (
+            <p class="font-semibold" role="status">
+              Checks may have stopped: the last one ran {formatAge(lastCheck)} ago.
+            </p>
+          )}
+          {visible.length > 0 && (
+            <dl class="pl-stats">
               {stats.map((stat) => (
                 <div class="flex flex-col gap-1">
-                  <dt class="pl-label" style="color: inherit; opacity: 0.7">{stat.label}</dt>
-                  <dd class="pl-data text-lg sm:text-2xl">{stat.value}</dd>
+                  <dt class="pl-label" style="color: inherit; opacity: 0.65">{stat.label}</dt>
+                  <dd class="pl-data text-xl sm:text-2xl">{stat.value}</dd>
                 </div>
               ))}
             </dl>
-          </section>
+          )}
+        </div>
+      </div>
+    </section>
 
+    <main class="pl-wrap flex flex-1 flex-col gap-10 py-10 sm:py-14">
+      {
+        visible.length === 0 ? (
+          <p class="text-sub">No services are being monitored.</p>
+        ) : (
           <section aria-labelledby="services-heading" class="flex flex-col gap-4">
-            <h2 class="pl-label" id="services-heading">services</h2>
+            <div class="flex items-baseline justify-between gap-4">
+              <h2 class="text-xl" id="services-heading">Services</h2>
+              <span class="pl-label">last 50 checks</span>
+            </div>
             <ul class="pl-list">
               {visible.map((service) => (
                 <li class="pl-item">
@@ -113,12 +118,12 @@ Astro.response.headers.set("Cache-Control", "public, max-age=60, stale-while-rev
               <span>50 checks ago</span><span>now</span>
             </div>
           </section>
-        </>
-      )
-    }
+        )
+      }
 
-    <footer class="text-sub mt-auto text-xs">
-      powered by <a class="hover:text-main underline underline-offset-4" href="https://github.com/mortezaom/pilotlight" rel="noopener noreferrer" target="_blank">pilotlight</a>
-    </footer>
-  </main>
+      <footer class="text-sub mt-auto text-xs">
+        powered by <a class="hover:text-main underline underline-offset-4" href="https://github.com/mortezaom/pilotlight" rel="noopener noreferrer" target="_blank">pilotlight</a>
+      </footer>
+    </main>
+  </div>
 </Base>

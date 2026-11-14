@@ -30,7 +30,7 @@ describe("every theme is readable", () => {
 
 test("themeCss falls back to defaults for unknown ids", () => {
   const css = themeCss("nope", "also-nope");
-  expect(css).toContain(THEMES["pilotlight-day"].colors.bg);
-  expect(css).toContain(THEMES["pilotlight-night"].colors.bg);
+  expect(css).toContain(THEMES["pilotlight-light"].colors.bg);
+  expect(css).toContain(THEMES["pilotlight-dark"].colors.bg);
   expect(css).toContain("prefers-color-scheme:dark");
 });

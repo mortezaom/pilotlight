@@ -11,6 +11,10 @@ import {
 } from "@/lib/themes";
 import { cn } from "@/lib/utils";
 
+// "\"Funnel Display Variable\", system-ui" -> "Funnel Display"
+const fontName = (id: keyof typeof FONTS) =>
+  FONTS[id].split('"')[1].replace(" Variable", "");
+
 const entries = Object.entries(THEMES) as [ThemeId, Theme][];
 
 const SAMPLE = [
@@ -82,7 +86,6 @@ function ThemeGroup({
                 className="text-lg leading-none"
                 style={{
                   fontFamily: FONTS[style.fonts.heading],
-                  fontStretch: style.heading.stretch,
                   fontWeight: style.heading.weight,
                   letterSpacing: style.heading.tracking,
                   textTransform: style.heading.case,
@@ -115,7 +118,7 @@ function ThemeGroup({
                   fontFamily: FONTS[style.fonts.data],
                 }}
               >
-                {style.label}
+                {fontName(style.fonts.heading)} · {fontName(style.fonts.data)}
               </span>
             </button>
           ))}

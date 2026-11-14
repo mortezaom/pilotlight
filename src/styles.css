@@ -1,14 +1,17 @@
-@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/google-sans-flex";
+@import "@fontsource-variable/google-sans-code";
 @import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
-@import "@fontsource-variable/ibm-plex-sans";
-@import "@fontsource/ibm-plex-mono/400.css";
-@import "@fontsource/ibm-plex-mono/600.css";
-@import "@fontsource-variable/fraunces";
-@import "@fontsource-variable/archivo/wdth.css";
-@import "@fontsource-variable/bricolage-grotesque";
-@import "@fontsource/vt323";
-@import "@fontsource-variable/manrope";
+@import "@fontsource-variable/outfit";
+@import "@fontsource-variable/jetbrains-mono";
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource/space-mono/400.css";
+@import "@fontsource/space-mono/700.css";
+@import "@fontsource-variable/unbounded";
+@import "@fontsource-variable/onest";
+@import "@fontsource-variable/martian-mono";
+@import "@fontsource-variable/funnel-display";
+@import "@fontsource-variable/inter-tight";
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -16,45 +19,45 @@
    Fonts above cost nothing until a theme uses them. */
 @custom-variant dark (@media (prefers-color-scheme: dark));
 
-/* Fallback (Pilotlight Day) for anything rendered without the injected theme */
+/* Fallback (Pilotlight Light) for anything rendered without the injected theme */
 :root {
-  --bg: #f7f8fa;
+  --bg: #f5f6f8;
   --surface: #ffffff;
-  --line: #dde1e6;
-  --text: #16191d;
-  --sub: #545c67;
-  --main: #1f6fd1;
-  --up: #1f8a52;
-  --warn: #9a5c00;
-  --down: #c2362f;
-  --font-body: "JetBrains Mono Variable", ui-monospace, monospace;
+  --line: #e1e4e9;
+  --text: #14161a;
+  --sub: #5d6470;
+  --main: #2160e0;
+  --up: #15803d;
+  --warn: #b45309;
+  --down: #dc2626;
+  --font-body: "Google Sans Flex Variable", system-ui, sans-serif;
   --font-heading: var(--font-body);
-  --font-data: var(--font-body);
+  --font-data: "Google Sans Code Variable", ui-monospace, monospace;
   --heading-weight: 600;
   --heading-case: none;
-  --heading-tracking: 0;
-  --heading-stretch: 100%;
-  --radius: 3px;
+  --heading-tracking: -0.03em;
+  --radius: 14px;
   --density: 1;
   --edge: 1px solid;
-  --bar-height: 20px;
-  --bar-up: 50%;
-  --bar-gap: 1px;
-  --bar-radius: 1px;
-  --item-bg: transparent;
-  --item-border: 0px solid transparent;
+  --bar-height: 24px;
+  --bar-up: 55%;
+  --bar-gap: 2px;
+  --bar-radius: 3px;
+  --item-bg: var(--surface);
+  --item-border: 1px solid var(--line);
   --item-divider: 1px solid var(--line);
-  --item-gap: 0px;
-  --item-pad: 1rem 0;
+  --item-gap: 0.75rem;
+  --item-pad: 1.1rem 1.25rem;
   --item-shadow: none;
-  --hero-size: 2.5rem;
-  --hero-align: left;
-  --hero-items: flex-start;
-  --hero-bg: transparent;
+  --hero-size: 3rem;
+  --hero-align: center;
+  --hero-items: center;
+  --hero-bg: var(--surface);
   --hero-fg: var(--text);
-  --hero-border: 0px solid transparent;
-  --hero-pad: 0px;
-  --hero-shadow: none;
+  --hero-wave: var(--main);
+  --hero-wave-status: 100%;
+  --hero-wave-opacity: 0.5;
+  --hero-lift: 0%;
 
   /* shadcn/ui variables, all derived from the theme */
   --background: var(--bg);
@@ -134,7 +137,6 @@
   h3 {
     font-family: var(--font-heading);
     font-weight: var(--heading-weight);
-    font-stretch: var(--heading-stretch);
     text-transform: var(--heading-case);
     letter-spacing: var(--heading-tracking);
   }
@@ -153,22 +155,89 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
   }
+  /* full-width status band; --status follows the overall level */
   .pl-hero {
+    --status: var(--sub);
+    position: relative;
+    padding-block: 1.25rem clamp(6rem, 14vw, 8.5rem);
+    overflow: hidden;
+    color: var(--hero-fg);
+    background: var(--hero-bg);
+    border-bottom: var(--edge) var(--line);
+  }
+  .pl-hero[data-level="up"] {
+    --status: color-mix(in srgb, var(--up), #fff var(--hero-lift));
+  }
+  .pl-hero[data-level="partial"] {
+    --status: color-mix(in srgb, var(--warn), #fff var(--hero-lift));
+  }
+  .pl-hero[data-level="down"] {
+    --status: color-mix(in srgb, var(--down), #fff var(--hero-lift));
+  }
+  .pl-hero-body {
     display: flex;
     flex-direction: column;
-    gap: calc(1.25rem * var(--density));
+    gap: calc(1.1rem * var(--density));
     align-items: var(--hero-items);
-    padding: var(--hero-pad);
-    color: var(--hero-fg);
     text-align: var(--hero-align);
-    background: var(--hero-bg);
-    border: var(--hero-border);
-    border-radius: calc(var(--radius) * 1.5);
-    box-shadow: var(--hero-shadow);
   }
   .pl-hero-title {
     font-size: var(--hero-size);
-    line-height: 0.98;
+    line-height: 1;
+  }
+  .pl-hero-chip {
+    display: inline-flex;
+    gap: 0.6rem;
+    align-items: center;
+    padding: 0.35rem 0.8rem;
+    font-family: var(--font-data);
+    font-size: 0.8rem;
+    background: color-mix(in srgb, var(--status) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--status) 45%, transparent);
+    border-radius: max(var(--radius), 4px);
+  }
+  .pl-pulse {
+    width: 0.55rem;
+    height: 0.55rem;
+    background: var(--status);
+    border-radius: 999px;
+    box-shadow: 0 0 0 0 var(--status);
+    animation: pl-pulse 2.4s ease-out infinite;
+  }
+  .pl-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    width: 100%;
+    max-width: 34rem;
+    padding-top: 0.75rem;
+  }
+  /* background strands, sliding one loop every 40 s */
+  .pl-wave {
+    position: absolute;
+    inset: auto 0 0;
+    height: clamp(7.5rem, 16vw, 10rem);
+    overflow: hidden;
+    pointer-events: none;
+    opacity: var(--hero-wave-opacity);
+  }
+  .pl-wave svg {
+    width: 200%;
+    height: 100%;
+    fill: none;
+    stroke: color-mix(
+      in srgb,
+      var(--status) var(--hero-wave-status),
+      var(--hero-wave)
+    );
+    stroke-width: 1;
+    animation: pl-slide 40s linear infinite;
+  }
+  .pl-wrap {
+    width: 100%;
+    max-width: 52rem;
+    padding-inline: 1rem;
+    margin-inline: auto;
   }
   .pl-list {
     display: flex;
@@ -211,5 +280,37 @@
   .pl-bar[data-status="none"] {
     height: 25%;
     background: color-mix(in srgb, var(--sub) 25%, transparent);
+  }
+}
+
+@keyframes pl-slide {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@keyframes pl-pulse {
+  70% {
+    box-shadow: 0 0 0 0.5rem transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+/* fade the strands out at both edges where supported */
+@supports (mask-image: none) {
+  .pl-wave {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 15%,
+      #000 85%,
+      transparent
+    );
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pl-wave svg,
+  .pl-pulse {
+    animation: none;
   }
 }

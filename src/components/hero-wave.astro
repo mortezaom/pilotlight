@@ -1,0 +1,35 @@
+---
+// Two twisted ribbons drawn as strands of one sine path, each scaled
+// vertically. Two periods wide so a -50% slide loops seamlessly.
+const PERIOD = 1600;
+const STEPS = 96;
+const points = Array.from({ length: STEPS * 3 + 1 }, (_, i) => {
+  const x = -PERIOD + (i * PERIOD) / STEPS;
+  return `${x.toFixed(1)},${Math.cos((2 * Math.PI * x) / PERIOD).toFixed(4)}`;
+});
+const path = `M${points.join("L")}`;
+
+// strand offsets across each ribbon: denser and brighter toward the edges
+const strands = [-1, -0.78, -0.5, -0.2, 0.2, 0.5, 0.78, 1];
+const ribbons = [
+  { amp: 80, shift: 0 },
+  { amp: 56, shift: PERIOD / 4 },
+];
+---
+
+<div aria-hidden="true" class="pl-wave">
+  <svg aria-hidden="true" preserveAspectRatio="none" viewBox="0 -100 3200 200">
+    <defs><path d={path} id="pl-strand" vector-effect="non-scaling-stroke" /></defs>
+    {
+      ribbons.map(({ amp, shift }) =>
+        strands.map((s) => (
+          <use
+            href="#pl-strand"
+            opacity={(0.25 + 0.75 * Math.abs(s)).toFixed(2)}
+            transform={`translate(${shift} 0) scale(1 ${(s * amp).toFixed(1)})`}
+          />
+        ))
+      )
+    }
+  </svg>
+</div>
