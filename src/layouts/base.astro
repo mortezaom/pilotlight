@@ -4,8 +4,9 @@ import { Toaster } from "@/components/ui/sonner";
 import { getSetting } from "@/lib/settings";
 import { DEFAULT_THEMES, themeCss } from "@/lib/themes";
 
-type Props = { title: string; description?: string };
-const { title, description = "Uptime monitoring and status page" } = Astro.props;
+// toasts: off for the public status page, which then ships no JavaScript
+type Props = { title: string; description?: string; toasts?: boolean };
+const { title, description = "Uptime monitoring and status page", toasts = true } = Astro.props;
 
 // The admin's theme pair; the visitor's OS setting picks light or dark
 const settings = await getSetting("settings").catch(() => null);
@@ -27,6 +28,6 @@ const theme = themeCss(
   </head>
   <body class="antialiased">
     <slot />
-    <Toaster client:idle />
+    {toasts && <Toaster client:idle />}
   </body>
 </html>
